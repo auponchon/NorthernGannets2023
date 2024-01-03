@@ -1,0 +1,71 @@
+---
+title: "1-Data processing"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+# Importing tracking data
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+library(move)
+library(here)
+library(sf)
+library(tidyverse)
+library(conflicted)
+
+
+loginStored <- movebankLogin(username="AurorePonchon",
+                               password="AlbaNoir0*")
+
+gannets<-searchMovebankStudies(x="gannet",
+                                 login=loginStored)[1]
+metadata<-getMovebankStudy(study=gannets,
+                           login=loginStored)
+getMovebankSensorsAttributes(study=gannets,
+                             login=loginStored)
+reftable<-getMovebankReferenceTable(study=gannets,
+                                    login=loginStored)
+move.rouzic <- getMovebankData(study=gannets,
+                                login=loginStored,
+                              removeDuplicatedTimestamps=TRUE) 
+ 
+save(move.rouzic,
+      file=here("data","RawData","gannets_rouzic_raw.Rdata"))
+
+ 
+ load(here("data","RawData","gannets_rouzic_raw.Rdata"))
+ 
+all_rouzic<-move.rouzic@data %>% 
+    dplyr::select(tag_local_identifier,
+                  timestamp,
+                  location_long,
+                  location_lat,
+                  barometric_height, 
+                  ground_speed) %>% 
+    rename(id=tag_local_identifier,
+           datetime=timestamp,
+           long=location_long,
+           lat=location_lat,
+           alt=barometric_height,
+           speed=ground_speed)  %>% 
+    arrange(id,datetime) %>% 
+    mutate(id=as.factor(id),
+           site=as.factor("Rouzic"))
+
+ save(all_rouzic,
+      file=here("data","RawData","gannets_rouzic_raw.Rdata"))
+
+rouziclayer<- st_as_sf(all_rouzic)
+st_write(rouziclayer,
+         dsn=here("data","NewlyCreatedData","shapefiles"),
+         layer="all_raw_gannets_rouzic",
+         driver="ESRI Shapefile",
+         delete_layer =T,
+          delete_dsn = T)
+
+```
