@@ -5,41 +5,63 @@ format: html
 editor: visual
 ---
 
-# Importing tracking data
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+
+library(move)
+library(here)
+library(sf)
+library(tidyverse)
+library(lubridate)
+library(conflicted)
+library(readxl)
+library(grid)
+library(gridExtra)
+
+source(here::here("R","trip_functions.R"))
+```
+
+# 1-Importing tracking data
+
+Data deposited on movebank.com. An account is required to access and download the data.
 
 ```{r}
 #| echo: false
 #| include: true
 #| warning: false
 #| message: false
-library(move)
-library(here)
-library(sf)
-library(tidyverse)
-library(conflicted)
 
 
-loginStored <- movebankLogin(username="AurorePonchon",
-                               password="AlbaNoir0*")
+#Import data directly from movebank
+# loginStored <- movebankLogin(username="AurorePonchon",
+#                                password="***")
+# 
+# gannets<-searchMovebankStudies(x="gannet",
+#                                  login=loginStored)[1]
 
-gannets<-searchMovebankStudies(x="gannet",
-                                 login=loginStored)[1]
-metadata<-getMovebankStudy(study=gannets,
-                           login=loginStored)
-getMovebankSensorsAttributes(study=gannets,
-                             login=loginStored)
-reftable<-getMovebankReferenceTable(study=gannets,
-                                    login=loginStored)
-move.rouzic <- getMovebankData(study=gannets,
-                                login=loginStored,
-                              removeDuplicatedTimestamps=TRUE) 
- 
-save(move.rouzic,
-      file=here("data","RawData","gannets_rouzic_raw.Rdata"))
+# metadata<-getMovebankStudy(study=gannets,
+#                            login=loginStored)
+# getMovebankSensorsAttributes(study=gannets,
+#                              login=loginStored)
+# reftable<-getMovebankReferenceTable(study=gannets,
+#                                     login=loginStored)
 
- 
- load(here("data","RawData","gannets_rouzic_raw.Rdata"))
- 
+# #raw data from 2022 and 2023 are downloaded and saved
+# move.rouzic <- getMovebankData(study=gannets,
+#                                 login=loginStored,
+#                               removeDuplicatedTimestamps=TRUE)
+# save(move.rouzic,
+#       file=here("data","RawData","gannets_rouzic_raw_2022_2023.Rdata"))
+
+
+#raw data from 2022 nd 2023 
+load(here("data","RawData","gannets_rouzic_raw_2022_2023.Rdata"))
+
+ #format raw data and select only useful columns
 all_rouzic<-move.rouzic@data %>% 
     dplyr::select(tag_local_identifier,
                   timestamp,
@@ -55,17 +77,118 @@ all_rouzic<-move.rouzic@data %>%
            speed=ground_speed)  %>% 
     arrange(id,datetime) %>% 
     mutate(id=as.factor(id),
-           site=as.factor("Rouzic"))
+           site=as.factor("Rouzic"),
+           year=year(datetime))
 
- save(all_rouzic,
-      file=here("data","RawData","gannets_rouzic_raw.Rdata"))
 
-rouziclayer<- st_as_sf(all_rouzic)
-st_write(rouziclayer,
-         dsn=here("data","NewlyCreatedData","shapefiles"),
-         layer="all_raw_gannets_rouzic",
-         driver="ESRI Shapefile",
-         delete_layer =T,
-          delete_dsn = T)
+#convert formatted raw data into shapefile
+# rouziclayer<- st_as_sf(all_rouzic,
+#                        coords = c("long", "lat"), 
+#                        crs = 4326)
+# st_write(rouziclayer,
+#          dsn=here("data","NewlyCreatedData","shapefiles"),
+#          layer="all_raw_gannets_rouzic_2022_2023",
+#          driver="ESRI Shapefile",
+#          delete_layer =T,
+#           delete_dsn = T)
 
 ```
+
+# Importing individual data
+
+Individual data (sex, date of equipment, breeding stage, period, serological status etc...) are stored in a separate file
+
+```{r}
+serol.rouzic<-read_excel(here("data","RawData","data_Rouzic_2023_sexage_AIV.xlsx"),
+              sheet="capture_data",col_names = T) %>% 
+      dplyr::select(GSM,
+                    stage,
+                    sexe,
+                    age_chick,
+                    AIV,
+                    body_weight,
+                    tarsus,
+                    wing,
+                    culmen) %>% 
+       rename(id=GSM, 
+              Sex=sexe,
+              sero=AIV) %>% 
+       mutate(id=as.factor(id),
+              sero=as.factor(sero)) 
+```
+
+# 3- Creating individual trips
+
+```{r}
+all_rouzic23<-all_rouzic %>% 
+              dplyr::filter(year==2023) %>% 
+              droplevels()
+    
+
+ids<-unique(levels(all_rouzic23$id))
+colo.ind<-tim.colors(50)
+
+#create new object with distance and time differences
+raw_rouzic_2023<-NULL
+
+#loop through each individual 
+for (i in 1:length(ids)){
+    ind.loc<-all_rouzic23 %>% 
+        dplyr::filter(id==ids[i]) %>% 
+        mutate(distmax=0,
+               distadj=0,
+               totalpath=0,
+               difftimemin=0,
+               travelNb=0,
+               onlandNb=0)
+  
+    print(c("Processing individual ", i))
+      
+  #loop through each line to calculate distance and time difference with previous location
+for (l in 2:nrow(ind.loc)){
+    
+ind.loc[l,"distadj"]<-rdist.earth(ind.loc[l,c("long","lat")],
+                                   ind.loc[l-1,c("long","lat")], 
+                                  miles = F)
+ind.loc[l,"difftimemin"]<-difftime(ind.loc[l,"datetime"],
+                                   ind.loc[l-1,"datetime"], 
+                                   units="mins")
+ind.loc[l,"distmax"]<-rdist.earth(ind.loc[l,c("long","lat")],
+                                   colo_coord_rouzic[c(1,2)], 
+                                  miles = F)
+}
+
+#define periods on land and at sea   
+ind.loc<-define_trips(data=ind.loc,
+                      dist.min=dist.threshold)
+raw_rouzic_2023<-rbind(raw_rouzic_2023,ind.loc)    
+}
+raw_rouzic_2023$trip.id<-paste(raw_rouzic_2023$id,raw_rouzic_2023$travelNb,sep=".")
+raw_rouzic_2023<-add_missing_return(raw_rouzic_2023,
+                                  time.int=reso,colony=colo_coord_rouzic)
+
+save(raw_rouzic_2023,file=here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
+
+load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
+
+
+distraw<-ggplot(rawLoc.rouzic,aes(x=datetime,y=distmax),group=id)+
+    geom_point(aes(color=id),show.legend=F) +
+    scale_y_continuous(limits=c(0,200)) +
+    scale_color_manual(values=colo.ind)+
+    labs(x="Date",y="Maximal distance to colony (km)")
+
+diffraw<-ggplot(rawLoc.rouzic,aes(x=datetime,y=difftimemin),group=id)+
+    geom_point(aes(color=id),show.legend=F) +
+    scale_y_continuous(limits=c(0,3600)) +
+    scale_color_manual(values=colo.ind)+
+    labs(x="Date",y="Time gaps between 2 locations (in min)")
+
+grid.arrange(distraw,diffraw, ncol=2,
+              top = grid::textGrob("Raw data",gp=gpar(fontsize=16,font=3)))
+
+
+
+```
+
+#  
