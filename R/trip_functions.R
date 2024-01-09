@@ -14,9 +14,9 @@ colo_coord_rouzic<-data.frame(long=-3.436752, lat=48.899868,name="Rouzic")
 
 
 #Time resolution for interpolation
-reso<-60*2 #(in seconds)
+reso<-60*5 #(in seconds)
 
-#distance threshold from the colony to determine a trip
+#distance threshold from the colony to determine a trip (in km)
 dist.threshold<-1  
 
 ##Parameters to define clean trips and filter locations
@@ -110,6 +110,10 @@ trips_summary_ind<-function (dataset,colony){
                 maxi<-data.frame(id=temp$id[1],
                            #      travelNb=nb.trip[k],
                                  trip.id=temp$trip.id[1],
+                                 stage=temp$stage[1],
+                                 sex=temp$sex[1],
+                                 deploy=temp$deploy[1],
+                                 sero=1,
                                  Distmaxkm=max(temp$distmax),
                                  TripDurh=sum(temp$difftimemin)/60,
                                  maxDiffTimeh=max(temp$difftimemin)/60,
@@ -144,6 +148,11 @@ land_summary_ind<-function (dataset,colony){
                 maxo<-data.frame(id=ids[k],
                                  onlandNb=nb.land[a],
                                  onland.id=paste(nb.land[a],sep="."),
+                                 trip.id=temp$trip.id[1],
+                                 stage=temp$stage[1],
+                                 sex=temp$sex[1],
+                                 deploy=temp$deploy[1],
+                                 sero=1,
                                  LandDurh=sum(tempo$difftimemin)/60,
                                  maxDiffTimeh=max(tempo$difftimemin)/60,
                                  nlocs=nrow(tempo),
