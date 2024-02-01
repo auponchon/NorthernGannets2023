@@ -1,0 +1,64 @@
+---
+title: "Résumé des trajets 2023"
+author: "Aurore Ponchon"
+format: docx
+editor: visual
+---
+
+# Résumé général
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+
+library(tidyverse)
+library(here)
+library(sf)
+library(kableExtra)
+
+
+source(here::here("R","trip_functions.R"))
+
+load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
+
+#summarize all trips and periods on land by individuals
+raw_trips_rouzic23<-trips_summary_ind(raw_rouzic_2023,colony=colo_coord_rouzic)
+raw_land_rouzic23<-land_summary_ind(raw_rouzic_2023,colony=colo_coord_rouzic)
+
+summy.trips.ad<-raw_trips_rouzic23 %>% 
+    dplyr::filter(stage=="adult") %>% 
+    group_by(id) %>% 
+    summarize(NbLocs=sum(nlocs),
+              Nbtrajet=n(),
+              DateMin=min(DateStart),
+              DateMax=max(DateEnd),
+              Sex=sex[1],
+              stage=stage[1],
+              sero=sero[1],
+              Duréemoy=mean(TripDurh),
+              Distmax=max(Distmaxkm))
+
+kbl(summy.trips.ad,caption="Summary of raw trips for aduts") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+summy.trips.juv<-raw_trips_rouzic23 %>% 
+    dplyr::filter(stage=="juvenile") %>% 
+    group_by(id) %>% 
+    summarize(NbLocs=sum(nlocs),
+              Nbtrajet=n(),
+              DateMin=min(DateStart),
+              DateMax=max(DateEnd),
+              Sex=sex[1],
+              stage=stage[1],
+              sero=sero[1],
+              Duréemoy=mean(TripDurh),
+              Distmax=max(Distmaxkm))
+
+kbl(summy.trips.juv,caption="Summary of raw trips for juveniles") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+```

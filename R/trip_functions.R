@@ -108,22 +108,22 @@ trips_summary_ind<-function (dataset,colony){
     for (k in 1:length(nb.trip)){
         temp<-subset(dataset,dataset$trip.id==nb.trip[k])
                 maxi<-data.frame(id=temp$id[1],
-                           #      travelNb=nb.trip[k],
+                                 travelNb=nb.trip[k],
                                  trip.id=temp$trip.id[1],
                                  stage=temp$stage[1],
                                  sex=temp$sex[1],
                                  deploy=temp$deploy[1],
-                                 sero=1,
+                                 sero=temp$sero[1],
                                  Distmaxkm=max(temp$distmax),
                                  TripDurh=sum(temp$difftimemin)/60,
                                  maxDiffTimeh=max(temp$difftimemin)/60,
                                  TotalPathkm=temp$totalpath[nrow(temp)],
                                  nlocs=nrow(temp),
+                                 DateStart=temp$datetime[1],
                                  DateEnd=temp$datetime[nrow(temp)],
                                  site = colony$name)
                 dist.max.all.trips<-rbind(dist.max.all.trips,maxi)
-                
-            }
+    }
     
     return(dist.max.all.trips)
 }
@@ -152,10 +152,11 @@ land_summary_ind<-function (dataset,colony){
                                  stage=temp$stage[1],
                                  sex=temp$sex[1],
                                  deploy=temp$deploy[1],
-                                 sero=1,
+                                 sero=temp$sero[1],
                                  LandDurh=sum(tempo$difftimemin)/60,
                                  maxDiffTimeh=max(tempo$difftimemin)/60,
                                  nlocs=nrow(tempo),
+                                 DateStart=tempo$datetime[1],
                                  DateEnd=tempo$datetime[nrow(tempo)],
                                  site=colony$name)
                 all.land<-rbind(all.land,maxo)
@@ -320,7 +321,6 @@ interpol_pastecs<-function(data,time.int,colony){
                    totalpath=0,
                    speed=0,
                    alt=0,
-                   sero=0,
                    onlandNb=0)
         
         for (z in 2:nrow(new.sub)){
@@ -332,7 +332,7 @@ interpol_pastecs<-function(data,time.int,colony){
         }
      
         new.sub<-new.sub %>% 
-            dplyr::select(id,datetime,long,lat,alt,speed,site,sero,distmax,
+            dplyr::select(id,datetime,long,lat,alt,speed,site,distmax,
                           distadj,totalpath,difftimemin,travelNb,onlandNb,trip.id)
         
         new.trip1<-rbind(new.trip1,new.sub)

@@ -1,0 +1,305 @@
+---
+title: "2-Trip characteristics"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+## Trip summary with gaps \<6h
+
+```{r}
+library(here)
+library(tidyverse)
+library(gridExtra)
+library(nlme)
+library(emmeans)
+library(DHARMa)
+library(kableExtra)
+library(plotrix)
+
+source(here("R","trip_functions.R"))
+
+#trips
+load(here::here("data","NewlyCreatedData","clean_6_locs_AD_rouzic23.RData"))
+trips6<-trips_summary_ind(loc.clean.interp.rouzic,
+                                  colony=colo_coord_rouzic) %>% 
+    dplyr::mutate(sero=as.factor(sero))
+
+#time in colony
+load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
+land<-raw_rouzic_2023 %>% 
+    land_summary_ind(.,colony=colo_coord_rouzic) %>% 
+    dplyr::filter(LandDurh > 1 & 
+                    LandDurh < 100 & 
+                      stage=="adult") %>% 
+     dplyr::mutate(sero=as.factor(sero))
+
+#Table summary
+sum.ids<-trips6 %>% 
+    summarize(Ids=length(unique(id)),
+              Trips=length(unique(trip.id)),
+              Debut=min(DateEnd),
+              Fin=max(DateEnd))
+  
+kbl(sum.ids,caption="Sample size for trips") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+sum.id<- trips6 %>% 
+    group_by(id) %>% 
+    summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
+                     ~ mean(.x, na.rm = TRUE))) %>% 
+    as.data.frame()
+
+sum.trips<- sum.id %>% 
+    summarize(across(where(is.numeric), 
+                     list(mean=mean,
+                          se=plotrix::std.error))) %>% 
+    mutate(across(where(is.numeric), round,digits=0))
+
+lands.ids<-land %>% 
+    summarize(Ids=length(unique(id)),
+              Land=length(unique(onland.id)),
+              Debut=min(DateEnd),
+              Fin=max(DateEnd))
+
+kbl(lands.ids,caption="Sample size for periods on land") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+land.id<- land %>% 
+    group_by(id) %>% 
+    summarize(Time= mean(LandDurh, na.rm=T)) %>% 
+    as.data.frame()
+
+sum.lands<- land.id %>% 
+    summarize(across(where(is.numeric), 
+                     list(mean=mean,
+                          se=plotrix::std.error))) %>% 
+    mutate(across(where(is.numeric), round,digits=0))
+
+kbl(sum.trips,caption="Summary of trip characteristics - Gaps <6h",
+    col.names=c("DistmaxMean","DistmaxSE","TripDurMean",
+                "TripDurSE","TotPathMean","TotPathSE")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+kbl(sum.lands,caption="Summary of nest attendance",
+    col.names=c("DurationMean","DurationSE")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+
+## Trip summary with gaps \<3h
+
+```{r}
+#trips
+load(here::here("data","NewlyCreatedData","clean_3_locs_AD_rouzic23.RData"))
+trips3<-trips_summary_ind(loc.clean.interp.rouzic,
+                                  colony=colo_coord_rouzic) %>% 
+    dplyr::mutate(sero=as.factor(sero))
+
+#Table summary
+sum.ids<-trips3 %>% 
+    summarize(Ids=length(unique(id)),
+              Trips=length(unique(trip.id)),
+              Debut=min(DateEnd),
+              Fin=max(DateEnd))
+  
+kbl(sum.ids,caption="Sample size for trips") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+sum.id<- trips3 %>% 
+    group_by(id) %>% 
+    summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
+                     ~ mean(.x, na.rm = TRUE))) %>% 
+    as.data.frame()
+
+sum.trips<- sum.id %>% 
+    summarize(across(where(is.numeric), 
+                     list(mean=mean,
+                          se=plotrix::std.error))) %>% 
+    mutate(across(where(is.numeric), round,digits=0))
+
+
+kbl(sum.trips,caption="Summary of trip characteristics - Gaps <3h",
+    col.names=c("DistmaxMean","DistmaxSE","TripDurMean",
+                "TripDurSE","TotPathMean","TotPathSE")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+```
+
+# Comparisons between gaps \<3h and \<6h
+
+```{r}
+
+trips6$Group<-"H6"
+trips3$Group<-"H3"
+    
+trips<-rbind(trips6,trips3)
+
+mycol<-turbo(2,begin=0.25, end=0.7)
+
+
+ #maximal distance
+dist<-ggplot(trips,aes(x=Group,y=Distmaxkm, fill=Group,
+                                       colour=Group) ) +
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  geom_jitter(width=0.1, show.legend = FALSE)+
+  scale_y_continuous(limits=c(0,400),breaks=seq(0,400,100),expand=c(0.01,0.01))+
+ labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)  +
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#trip duration
+dur<-ggplot(trips,aes(x=Group,y=TripDurh, 
+                            fill=Group, colour=Group) )+
+  geom_jitter(width=0.1, show.legend = FALSE)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Trip duration (hrs)", x="",tag="b)") +
+  scale_y_continuous(limits=c(0,200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol) +
+scale_colour_manual(values=mycol)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#total distance travelled
+tot<-ggplot(trips,aes(x=Group,y=TotalPathkm, 
+                                      fill=Group, colour=Group) )+
+  geom_jitter(width=0.1, show.legend = FALSE)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Total distance travelled (km)",x="",tag="c)") +
+  scale_y_continuous(limits=c(0,1200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#nest attendance
+att<-ggplot(land,aes(x=site,y=LandDurh))+
+  geom_jitter(width=0.1,show.legend=F)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Nest attendance (hrs)",x="",tag="d)") +
+#  scale_y_continuous(limits=c(0,120),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+ # tiff("Figures/Figure 2 - Stats trip characteristics.tif",compression="lzw",
+ #      res=600,width=6500,height=3500)
+grid.arrange(arrangeGrob(dist,dur,tot,att,
+                         ncol=2,nrow=2))
+
+
+
+ #maximal distance
+distb<-ggplot(trips,aes(x=DateStart,y=Distmaxkm ,group=sero)) +
+   geom_point(aes(color=sero,shape=sero),show.legend = F)+
+
+    facet_wrap(Group~., nrow=2) +
+ labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)  
+
+ #max duration
+durb<-ggplot(trips,aes(x=DateStart,y=TripDurh ,group=sero)) +
+   geom_point(aes(color=sero,shape=sero),show.legend = F)+
+    facet_wrap(Group~., nrow=2) +
+ labs(y="Trip duration (hrs)",tag="b)",x="") +
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)  
+
+ #total distance
+totb<-ggplot(trips,aes(x=DateStart,y=TotalPathkm ,
+                        group=sero)) +
+   geom_point(aes(color=sero,shape=sero),show.legend = F)+
+    facet_wrap(Group~., nrow=2) +
+ labs(y="Total distance travelled (km)",tag="c)",x="") +
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)  
+
+grid.arrange(distb,durb,totb,
+             ncol=3)
+```
+
+# Comparison between infected and non-infected ind
+
+```{r}
+ #maximal distance
+trips6$sero<-as.factor(trips6$sero)
+
+dist.sero<-ggplot(trips6,aes(x=sero,y=Distmaxkm, fill=sero,
+                                       colour=sero) ) +
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  geom_jitter(width=0.1, show.legend = FALSE) +
+  scale_y_continuous(limits=c(0,400),breaks=seq(0,400,100),expand=c(0.01,0.01))+
+ labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)  +
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+
+#trip duration
+dur.sero<-ggplot(trips6,aes(x=sero,y=TripDurh, 
+                            fill=sero, colour=sero) )+
+  geom_jitter(width=0.1, show.legend = FALSE)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Trip duration (hrs)", x="",tag="b)") +
+  scale_y_continuous(limits=c(0,200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol) +
+scale_colour_manual(values=mycol)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#total distance travelled
+tot.sero<-ggplot(trips6,aes(x=sero,y=TotalPathkm, 
+                                      fill=sero, colour=sero) )+
+  geom_jitter(width=0.1, show.legend = FALSE)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Total distance travelled (km)",x="",tag="c)") +
+  scale_y_continuous(limits=c(0,1200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol) +
+  scale_colour_manual(values=mycol)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#nest attendance
+land<-land %>% 
+    dplyr::mutate(Sero=as.factor(sero))
+
+att.sero<-ggplot(land,aes(x=Sero,y=LandDurh,
+                     fill=Sero, colour=Sero))+
+  geom_jitter(width=0.1,show.legend=F) +
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE) +
+  labs(y="Nest attendance (hrs)",x="",tag="d)") +
+#  scale_y_continuous(limits=c(0,120),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+ # tiff("Figures/Figure 2 - Stats trip characteristics.tif",compression="lzw",
+ #      res=600,width=6500,height=3500)
+grid.arrange(arrangeGrob(dist.sero,dur.sero,tot.sero,att.sero,
+                         ncol=2,nrow=2))
+
+
+```
