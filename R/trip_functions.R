@@ -106,6 +106,7 @@ trips_summary_ind<-function (dataset,colony){
     dist.max.all.trips<-NULL
     
     for (k in 1:length(nb.trip)){
+        if (nb.trip[k]!=0){
         temp<-subset(dataset,dataset$trip.id==nb.trip[k])
                 maxi<-data.frame(id=temp$id[1],
                                  travelNb=nb.trip[k],
@@ -124,7 +125,7 @@ trips_summary_ind<-function (dataset,colony){
                                  site = colony$name)
                 dist.max.all.trips<-rbind(dist.max.all.trips,maxi)
     }
-    
+    }
     return(dist.max.all.trips)
 }
 

@@ -1,11 +1,12 @@
 ---
 title: "Résumé des trajets 2023"
 author: "Aurore Ponchon"
-format: docx
+format: html
 editor: visual
+always_allow_html: true
 ---
 
-# Résumé général
+# Résumé des trajets
 
 ```{r}
 #| echo: false
@@ -18,18 +19,22 @@ library(tidyverse)
 library(here)
 library(sf)
 library(kableExtra)
+library(plotrix)
 
 
 source(here::here("R","trip_functions.R"))
+source(here::here("R","problem_trips.R"))
 
 load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
 
 #summarize all trips and periods on land by individuals
 raw_trips_rouzic23<-trips_summary_ind(raw_rouzic_2023,colony=colo_coord_rouzic)
-raw_land_rouzic23<-land_summary_ind(raw_rouzic_2023,colony=colo_coord_rouzic)
 
+#detail of individual adult raw trips
 summy.trips.ad<-raw_trips_rouzic23 %>% 
     dplyr::filter(stage=="adult") %>% 
+   dplyr::filter(!trip.id %in% migration & 
+                      !trip.id %in% last.incomplete) %>% 
     group_by(id) %>% 
     summarize(NbLocs=sum(nlocs),
               Nbtrajet=n(),
@@ -38,13 +43,34 @@ summy.trips.ad<-raw_trips_rouzic23 %>%
               Sex=sex[1],
               stage=stage[1],
               sero=sero[1],
-              Duréemoy=mean(TripDurh),
-              Distmax=max(Distmaxkm))
+              DuréemoyDay=mean(TripDurh)/24,
+              SE.DuréeDay=std.error(TripDurh)/24,
+              minDuréeDay=min(TripDurh)/24,
+              maxDuréeDay=max(TripDurh)/24,
+              Distmaxmoykm=mean(Distmaxkm),
+              SE.Distmaxkm=std.error(Distmaxkm),
+              minDistmaxkm=min(Distmaxkm),
+              maxDistmaxkm=max(Distmaxkm))
 
-kbl(summy.trips.ad,caption="Summary of raw trips for aduts") %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))
+#general summary of adult trips
+summy.ad<-summy.trips.ad %>% 
+    ungroup() %>% 
+    summarise(NbId=n(),
+              NbLocs=sum(NbLocs),
+              Nbtrajet=sum(Nbtrajet),
+              DateMin=min(DateMin),
+              DateMax=max(DateMax),
+              DuréeMoyDay=mean(DuréemoyDay),
+              SE.DuréeDay=std.error(DuréemoyDay),
+              minDuréeDay=min(DuréemoyDay),
+              maxDuréeDay=max(maxDuréeDay),
+              DistmaxMoykm=mean(Distmaxmoykm),
+              SE.Distmaxkm=std.error(Distmaxmoykm),
+              minDistmaxkm=min(Distmaxmoykm),
+              maxDistmaxkm=max(Distmaxmoykm))
 
 
+#detail of individual juevnile raw trips
 summy.trips.juv<-raw_trips_rouzic23 %>% 
     dplyr::filter(stage=="juvenile") %>% 
     group_by(id) %>% 
@@ -55,10 +81,82 @@ summy.trips.juv<-raw_trips_rouzic23 %>%
               Sex=sex[1],
               stage=stage[1],
               sero=sero[1],
-              Duréemoy=mean(TripDurh),
-              Distmax=max(Distmaxkm))
+              DuréemoyDay=mean(TripDurh)/24,
+              MinDuréeDay=min(TripDurh)/24,
+              MaxDuréeDay=max(TripDurh)/24,
+              Distmaxmoykm=mean(Distmaxkm),
+              SE.Distmaxkm=std.error(Distmaxkm),
+              MinDistmaxkm=min(Distmaxkm),
+              MaxDistMaxkm=max(Distmaxkm))
 
-kbl(summy.trips.juv,caption="Summary of raw trips for juveniles") %>%
+
+#General summary of adult raw trips
+summy.juv<-summy.trips.juv %>% 
+    ungroup() %>% 
+    summarise(NbID=n(),
+        NbLocs=sum(NbLocs),
+              Nbtrajet=sum(Nbtrajet),
+              DateMin=min(DateMin),
+              DateMax=max(DateMax),
+              DuréeMoyDay=mean(DuréemoyDay),
+              SE.DuréeDay=std.error(DuréemoyDay),
+              minDuréeDay=min(MinDuréeDay),
+              maxDuréeDay=max(MaxDuréeDay),
+              DistmaxMoykm=mean(Distmaxmoykm),
+              SE.Distmaxkm=std.error(Distmaxmoykm),
+              minDistmaxkm=min(Distmaxmoykm),
+              maxDistmaxkm=max(Distmaxmoykm))
+
+
+#Detail of migration trip for 5 adults
+mig.ad<-raw_trips_rouzic23 %>% 
+    dplyr::filter(stage=="adult") %>% 
+   dplyr::filter(trip.id %in% migration) %>% 
+    group_by(id) %>% 
+    summarize(NbInd=n(),
+               DateMin=min(DateStart),
+              DateMax=max(DateEnd),
+              maxDuréeDay=max(TripDurh)/24,
+              maxDistkm=max(Distmaxkm))
+```
+
+## Résumé des trajets adultes
+
+Les tableaux comprennent tous les trajets bruts avec des gaps temporelles potentiels. Ils ne comprennent pas le dernier trajet incomplet ou le dernier trajet correspondant à la migration (5 trajet d'adultes)
+
+```{r}
+ 
+kbl(summy.ad,caption="Résumé des trajets adultes bruts", 
+    digits=1) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+kbl(summy.trips.ad,caption="Détail des trajets individuels adultes bruts", 
+    digits=1) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+kbl(mig.ad,caption="Résumé des trajets de migration adultes", 
+    digits=1) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 ```
+
+## Résumé des trajets juvéniles
+
+Les juvéniles comprennent généralement un seul trajet comprenant la migration
+
+```{r}
+ 
+kbl(summy.trips.juv,caption="Détail des trajets individuels adultes bruts", 
+    digits = 1) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+kbl(summy.juv,caption="Summary of raw trips for juveniles", 
+    digits = 1) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+
+## 
