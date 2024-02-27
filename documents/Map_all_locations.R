@@ -102,9 +102,9 @@ map<-ggplot()+
     theme_bw() 
 
 tiff(here::here("outputs","raw-adults_breeding.tif"),
-     width=3000, 
-     height=3000, 
-     res=400,
+     width=2800, 
+     height=2800, 
+     res=500,
      compression="lzw")
 print(map)
 dev.off()
@@ -205,8 +205,8 @@ mapjuv<-ggplot()+
     theme_bw() 
 
 tiff(here::here("outputs","raw_migration_adults_juv.tif"),
-     width=5000,
-     height=3500,
+     width=4500,
+     height=3000,
      res=500,
      compression="lzw")
 grid.arrange(mapad,mapjuv,ncol=2)
@@ -294,8 +294,8 @@ kern<-ggplot()+
 
 
 tiff(here::here("outputs","adults_distribution_kernel.tif"),
-     width=5000,
-     height=5000,
+     width=3500,
+     height=3500,
      res=500,
      compression="lzw")
 print(kern)

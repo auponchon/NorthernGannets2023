@@ -1,0 +1,187 @@
+---
+title: "Spatial analysis adult gannets 2023"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+# Separate kernels over sex, deployment and infection
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+library(here)
+library(tidyverse)
+library(sf)
+library(adehabitatHR)
+library(rnaturalearth)
+library(terra)
+library(ggspatial)
+library(RColorBrewer)
+
+source(here::here("R","trip_functions.R"))
+source(here::here("R","problem_trips.R"))
+
+load(here("data","NewlyCreatedData","clean_6_locs_AD_rouzic23.Rdata"))
+
+ext.brit<-terra::ext(300000,650000,5270000,5650000)
+
+#filter and project clean trips
+locs<-loc.clean.interp.rouzic %>% 
+    dplyr::mutate(sero=as.factor(sero),
+                  sex=as.factor(sex),
+                  deploy=as.factor(deploy)) %>% 
+    dplyr::filter(!trip.id %in% migration & 
+                      !trip.id %in% last.incomplete) %>% 
+    sf::st_as_sf(., coords = c("long","lat")) %>% 
+    sf::st_set_crs(4326) %>% 
+    st_transform(., projcrs) %>% 
+    as_Spatial(.)
+rm(loc.clean.interp.rouzic)
+
+#load bathymetry layer
+bathym<-terra::rast(here::here("data",
+                               "RawData",
+                               "shapefiles",
+                               "Bathym_FR_UK.tif")) %>% 
+       terra::project(.,projcrs) %>% 
+       terra::crop(., ext.brit)
+
+bathym[bathym>0]<-0
+ocean.pal <- rev(colorRampPalette(brewer.pal(9,"Blues"))(9))
+zbreaks <- c(-500,-200,-150,-100,-50,-25,0)
+
+
+#select borders
+target<-c("France","United Kingdom","Spain","Belgium",
+          "Netherlands", "Germany","Ireland","Isle of Man",
+          "Jersey" ,"Guernsey"  ,"Åland")
+
+
+#contours of countries
+shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+    dplyr::filter(name %in% target) %>% 
+  st_transform(.,projcrs)  %>% 
+    st_crop(., ext.brit)
+
+#coastlines
+coast<-ne_coastline(scale = 10, returnclass = "sf") %>% 
+  st_transform(.,projcrs)  %>% 
+    st_crop(., ext.brit)
+
+coord_rouzic<-colo_coord_rouzic %>% 
+    sf::st_as_sf(., coords = c("long","lat")) %>% 
+    sf::st_set_crs(4326)
+
+
+##kernels pour les sero
+col<-brewer.pal(n=8,"YlOrRd")
+
+KUD.sero<- kernelUD(locs[,"sero"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUDvol.sero <- getvolumeUD(KUD.sero)
+ver90.sero<-getverticeshr(KUDvol.sero ,90) %>% 
+    st_as_sf(.)
+# ver75.sero<-getverticeshr(KUDvol.sero ,75)%>% 
+#     st_as_sf(.)
+ver50.sero<-getverticeshr(KUDvol.sero ,50)%>% 
+    st_as_sf(.)
+# ver25.sero<-getverticeshr(KUDvol.sero ,25)%>% 
+#     st_as_sf(.)
+
+kern.sero<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver90.sero, fill=c("yellow","orchid"),
+                             colour=c("yellow","orchid"),
+                             alpha=0.5) +
+ #   geom_sf(data=ver75.sero, aes(fill=c(col[3],col[4]), alpha=0.3)) +
+    geom_sf(data=ver50.sero, fill=c("yellow4","darkorchid4"),
+                             colour=c("yellow4","darkorchid4"),
+                             alpha=0.5) +
+ #   geom_sf(data=ver25.sero,  aes(fill=c(col[7],col[8]), alpha=0.3)) + 
+    geom_sf(data=shp,fill="grey90") +
+    geom_sf(data=coast) +
+    geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+    coord_sf(xlim=ext.brit[c(1,2)],
+             ylim=ext.brit[c(3,4)],
+             expand=F) +
+
+    # scale_fill_gradientn(name="Bathymétrie",
+    #                      colors =ocean.pal,
+    #                      limits = c(- 200, 0))+
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+
+print(kern.sero)
+
+
+##kernels for sex
+
+KUD.sex<- kernelUD(locs[,"sex"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUDvol.sex <- getvolumeUD(KUD.sex)
+ver90.sex<-getverticeshr(KUDvol.sex ,90) %>% 
+    st_as_sf(.)
+# ver75.sex<-getverticeshr(KUDvol.sex ,75)%>% 
+#     st_as_sf(.)
+ver50.sex<-getverticeshr(KUDvol.sex ,50)%>% 
+    st_as_sf(.)
+# ver25.sex<-getverticeshr(KUDvol.sex ,25)%>% 
+#     st_as_sf(.)
+
+
+
+  kern.sex<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver90.sex, fill=c("yellow","orchid"),
+                             colour=c("yellow","orchid"),
+                             alpha=0.5) +
+ #   geom_sf(data=ver75.sex, aes(fill=c(col[3],col[4]), alpha=0.3)) +
+    geom_sf(data=ver50.sex, fill=c("yellow4","darkorchid4"),
+                             colour=c("yellow4","darkorchid4"),
+                             alpha=0.5) +
+ #   geom_sf(data=ver25.sex,  aes(fill=c(col[7],col[8]), alpha=0.3)) + 
+    geom_sf(data=shp,fill="grey90") +
+    geom_sf(data=coast) +
+    geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+    coord_sf(xlim=ext.brit[c(1,2)],
+             ylim=ext.brit[c(3,4)],
+             expand=F) +
+
+    # scale_fill_gradientn(name="Bathymétrie",
+    #                      colors =ocean.pal,
+    #                      limits = c(- 200, 0))+
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+
+print(kern.sex)
+```
