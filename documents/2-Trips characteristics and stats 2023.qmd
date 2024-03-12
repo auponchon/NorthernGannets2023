@@ -173,7 +173,6 @@ kbl(sum.trips,caption="Summary of trip characteristics - Gaps <3h",
 # Comparisons between gaps \<3h and \<6h
 
 ```{r}
-
 #| echo: false
 #| include: true
 #| warning: false
@@ -442,7 +441,6 @@ grid.arrange(arrangeGrob(dist.deploy,dur.deploy,tot.deploy,att.deploy,
 # Statistical tests with deployment
 
 ```{r}
-
 #| echo: false
 #| include: true
 #| warning: false
@@ -654,6 +652,8 @@ grid.arrange(arrangeGrob(distgg,
 
 ```
 
+Overall, no difference is detected in trip characteristics and nest attendance between deployment 1 an 2. The only significant variable is time
+
 # Statistical tests with sex
 
 ```{r}
@@ -863,3 +863,5 @@ grid.arrange(arrangeGrob(distgg,
 
  
 ```
+
+Différence entre mâles et femelles pour les trajets en mer mais pas pour l'attendance au nid. Pas d'intéraction avec le statut sérologique.

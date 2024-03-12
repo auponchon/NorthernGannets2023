@@ -1,0 +1,89 @@
+---
+title: "HMM 2023"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+## 1. Fitting a HMM
+
+Behavioural states are associated with each trip location:
+
+state 1:
+
+state2:
+
+state 3:
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+library(moveHMM)
+library(tidyverse)
+library(here)
+
+source(here::here("R","trip_functions.R"))
+
+load(here::here("data","NewlyCreatedData","clean_6_locs_AD_rouzic23.Rdata"))
+dat<-loc.clean.interp.rouzic %>% 
+    dplyr::rename(ID=id) 
+ 
+proc.dat<-prepData(dat,type="LL",coordNames = c("long","lat"))
+
+
+par(mfrow=c(1,2))
+hist(proc.dat$step)
+hist(proc.dat$angle)
+
+#finding the right set of parameters for step length and turning angles  for 3 states
+ set.seed(12345)
+ nruns<-20
+ mles<-vector("numeric",length=nruns)
+
+ allm <- list()
+ 
+ # Package for parallel computations
+library(parallel)
+ncores <- detectCores() - 1
+cl <- makeCluster(getOption("cl.cores", ncores))
+clusterExport(cl, list("proc.dat", "fitHMM"))
+
+ #test for von mise distribution for angle concentrations
+allPar0 <- lapply(as.list(1:nruns), function(x) {
+  stepMean0<-sort(c(runif(1,0.05,1),runif(1,0.1,5),runif(1,1,10)) ) # means for step length
+  sigma0<-stepMean0  #sd for step length
+  #zeromass0<-runif(3,0,0.01)
+  stepPar0<-c(stepMean0,sigma0)#,zeromass0)  #joint object for step length
+  angleMean0<-c(0,0,0)  #mean for turning angle
+  angleCon0<-runif(3,min=c(3,0.5,3),max=c(15,5,15) ) # angle concentration
+  anglePar0<-c(angleMean0,angleCon0)
+return(list(step = stepPar0, angle = anglePar0))
+})
+
+
+# Fit the nruns models in parallel
+allm_parallel <- parLapply(cl = cl, X = allPar0, fun = function(par0) {
+m <- fitHMM(data = proc.dat, nbStates = 3, stepPar0 = par0$step,
+anglePar0 = par0$angle)
+return(m)
+})
+
+#   m0<-fitHMM(data=proc.dat,nbStates=3,stepPar0=stepPar0,anglePar0=anglePar0,
+#              formula=~1,angleDist="vm")
+#   allm[[i]]<-m0
+#   mles[foo]<--m0$mod$minimum
+# 
+#   print( mles[foo])
+# }
+
+allnllk <- unlist(lapply(allm, function(m) m$mod$minimum))
+
+whichbest <- which.min(allnllk)
+mbest <- allm[[whichbest]]
+
+#lowest likelihood: -90453.6 with von mise 
+
+```

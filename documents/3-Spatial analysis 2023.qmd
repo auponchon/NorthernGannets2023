@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-# Separate kernels over sex, deployment and infection
+# Separate kernels over infection an sex
 
 ```{r}
 #| echo: false
@@ -78,8 +78,6 @@ coord_rouzic<-colo_coord_rouzic %>%
 
 
 ##kernels pour les sero
-col<-brewer.pal(n=8,"YlOrRd")
-
 KUD.sero<- kernelUD(locs[,"sero"],
                     same4all=T,
                     h=10000,
@@ -111,6 +109,7 @@ kern.sero<-ggplot()+
             colour="black",
             fill="yellow", 
             size=4) + 
+    labs(title="Distribution infected vs unfected") +
     coord_sf(xlim=ext.brit[c(1,2)],
              ylim=ext.brit[c(3,4)],
              expand=F) +
@@ -169,7 +168,7 @@ ver50.sex<-getverticeshr(KUDvol.sex ,50)%>%
     coord_sf(xlim=ext.brit[c(1,2)],
              ylim=ext.brit[c(3,4)],
              expand=F) +
-
+  labs(title="Distribution males vs females") +
     # scale_fill_gradientn(name="Bathymétrie",
     #                      colors =ocean.pal,
     #                      limits = c(- 200, 0))+
@@ -184,4 +183,100 @@ ver50.sex<-getverticeshr(KUDvol.sex ,50)%>%
     theme_bw() 
 
 print(kern.sex)
+```
+
+# GIF animation
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+library(gganimate)
+
+#define an extent for study area
+    xmin<-240000
+    xmax<-830000
+    ymin<-5190000
+    ymax<-5620000
+
+
+
+loc_df<-as.data.frame(locs) %>%
+    dplyr::rename(long=coords.x1,
+            lat=coords.x2)
+    # dplyr::filter(id=="233659"| id=="235197")
+
+nb<-length(unique(loc_df$id))
+
+#contours of countries
+shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+    dplyr::filter(name %in% target) %>%
+  st_transform(.,projcrs)  %>%
+    st_crop(., ext(c(xmin,xmax,ymin,ymax)))
+
+#coastlines
+coast<-ne_coastline(scale = 10, returnclass = "sf") %>%
+  st_transform(.,projcrs) %>%
+    st_crop(., ext(c(xmin,xmax,ymin,ymax)))
+
+
+anim <- ggplot()+
+
+  # basemap
+  geom_sf(data = shp)+
+     geom_sf(data = coast)+
+
+  coord_sf(xlim=c(xmin,xmax),
+             ylim=c(ymin,ymax),
+             expand=F) +
+  # lines and points
+  geom_path(data = loc_df,
+            aes(x=long,y=lat,
+                group=id,
+                color=id),
+                 show.legend = FALSE,
+            alpha = 0.3)+
+  geom_point(data = loc_df,
+             aes(x=long,y=lat,
+                 group=id,
+                 fill=id),
+             show.legend = FALSE,
+             alpha = 0.7,
+             shape=21,
+             size = 2)+
+  scale_fill_manual(values=magma(nb)) +
+    scale_colour_manual(values=magma(nb)) +
+
+  # formatting
+  labs(x=NULL, y=NULL,
+       fill = 'Sex',
+       color = 'Sex')+
+  theme_minimal()+
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+  theme(legend.position = "none")
+
+print(anim)
+
+
+animgif = anim +
+  transition_reveal(along = datetime) +
+#  ease_aes('linear') +
+  ggtitle("Date:{frame_along}")
+
+gganimate::animate(animgif, nframes = 800, fps = 25,
+                   renderer = gifski_renderer(),
+                   height=8,
+                   width=4,
+                   res=400,
+                   units="in")
+gganimate::anim_save(here::here("outputs","tracks.gif"))
 ```
