@@ -14,7 +14,7 @@ colo_coord_rouzic<-data.frame(long=-3.436752, lat=48.899868,name="Rouzic")
 
 
 #Time resolution for interpolation
-reso<-60*5 #(in seconds)
+reso<-60*15 #(in seconds)
 
 #distance threshold from the colony to determine a trip (in km)
 dist.threshold<-1  
@@ -177,8 +177,9 @@ land_summary_ind<-function (dataset,colony){
 add_missing_return<-function(dataset,time.int,colony){
     
     trip<-unique(dataset$trip.id)
-    
+
     for (a in 1:length(trip)){
+    
         
         temp.trip<- dataset %>% 
             dplyr::filter(trip.id==trip[a])
@@ -190,18 +191,16 @@ add_missing_return<-function(dataset,time.int,colony){
                        long=colony$long,
                        lat=colony$lat,
                        distmax=0,
-                       speed=0,
-                       difftimemin=time.int/60,
                        distadj=as.vector(rdist.earth(temp.trip[nrow(temp.trip),c("long","lat")],
                                                      colony[1,c("long","lat")],miles=F)),
-                       totalpath=temp.trip$totalpath[nrow(temp.trip)] + 
+                        totalpath=temp.trip$totalpath[nrow(temp.trip)] + 
                            as.vector(rdist.earth(temp.trip[nrow(temp.trip),c("long","lat")],
-                                                 colony[1,c("long","lat")],miles=F)))
+                                                 colony[1,c("long","lat")],miles=F)),
+                       difftimemin=time.int/60)
             
             
             dataset<-rbind(dataset,taily)
             
-  #          print(c(a,trip[a]))
         }   }
     
     dataset<-dataset %>%

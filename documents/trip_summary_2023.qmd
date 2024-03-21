@@ -42,6 +42,7 @@ summy.trips.ad.all<-raw_trips_rouzic23 %>%
               Sex=sex[1],
               stage=stage[1],
               sero=sero[1],
+              DuréeTracking=difftime(max(DateEnd),min(DateStart),units="days"),
               DuréemoyDay=mean(TripDurh)/24,
               SE.DuréeDay=std.error(TripDurh)/24,
               minDuréeDay=min(TripDurh)/24,
@@ -51,18 +52,18 @@ summy.trips.ad.all<-raw_trips_rouzic23 %>%
               minDistmaxkm=min(Distmaxkm),
               maxDistmaxkm=max(Distmaxkm))  
 
-summy.trips.ad<-summy.trips.ad.all%>% 
-dplyr::mutate(Durée=paste(round(DuréemoyDay,digits=1),"±",
-                              round(SE.DuréeDay,digits=1),sep=" "),
-                  RangeDurée=paste0(round(minDuréeDay,digits=1)," - ", 
-                                    round(maxDuréeDay,digits=1)),
-                  Distmax=paste(round(Distmaxmoykm,digits=1),"±",
-                                round(SE.Distmaxkm,digits=1), sep=" "),
-                  RangeDist=paste0(round(minDistmaxkm,digits=1)," - ", 
-                                   round(maxDistmaxkm,digits=1))) %>% 
-    ungroup() %>% 
-  dplyr::select(id,NbLocs,Nbtrajet,DateMin,DateMax,Sex,sero,
-                Durée,RangeDurée,Distmax,RangeDist)
+# summy.trips.ad<-summy.trips.ad.all%>% 
+# dplyr::mutate(Durée=paste(round(DuréemoyDay,digits=1),"±",
+#                               round(SE.DuréeDay,digits=1),sep=" "),
+#                   RangeDurée=paste0(round(minDuréeDay,digits=1)," - ", 
+#                                     round(maxDuréeDay,digits=1)),
+#                   Distmax=paste(round(Distmaxmoykm,digits=1),"±",
+#                                 round(SE.Distmaxkm,digits=1), sep=" "),
+#                   RangeDist=paste0(round(minDistmaxkm,digits=1)," - ", 
+#                                    round(maxDistmaxkm,digits=1))) %>% 
+#     ungroup() %>% 
+#   dplyr::select(id,NbLocs,Nbtrajet,DateMin,DateMax,Sex,sero,
+#                 Durée,RangeDurée,Distmax,RangeDist)
 
 #general summary of adult trips
 summy.ad<-summy.trips.ad.all %>% 
@@ -72,23 +73,32 @@ summy.ad<-summy.trips.ad.all %>%
               Nbtrajet=sum(Nbtrajet),
               DateMin=min(DateMin),
               DateMax=max(DateMax),
-              DuréeMoyDay=mean(DuréemoyDay),
-              SE.DuréeDay=std.error(DuréemoyDay),
-              minDuréeDay=min(DuréemoyDay),
-              maxDuréeDay=max(maxDuréeDay),
-              DistmaxMoykm=mean(Distmaxmoykm),
-              SE.Distmaxkm=std.error(Distmaxmoykm),
-              minDistmaxkm=min(Distmaxmoykm),
-              maxDistmaxkm=max(Distmaxmoykm)) %>% 
-    dplyr::mutate(Durée=paste(round(DuréeMoyDay,digits=1),"±",
+              DuréeMoyTracking=mean(DuréeTracking),
+              SE.DuréeTracking=std.error(DuréeTracking),
+              DuréeTrackingMin=min(DuréeTracking),
+              DuréeTrackingMax=max(DuréeTracking), 
+           DuréeMoyDay=mean(DuréemoyDay),
+           SE.DuréeDay=std.error(DuréemoyDay),
+           minDuréeDay=min(DuréemoyDay),
+           maxDuréeDay=max(maxDuréeDay),
+           DistmaxMoykm=mean(Distmaxmoykm),
+           SE.Distmaxkm=std.error(Distmaxmoykm),
+           minDistmaxkm=min(Distmaxmoykm),
+             maxDistmaxkm=max(Distmaxmoykm)) %>%
+    dplyr::mutate(DuréeTracking=paste(round(DuréeMoyTracking,digits=1),"±",
+                        round(SE.DuréeTracking,digits=1), sep=" "),
+              RangeDuréeTracking=paste0(round(DuréeTrackingMin, digits=1), " - ",
+                                        round(DuréeTrackingMax,digits=1)),
+                  Durée=paste(round(DuréeMoyDay,digits=1),"±",
                               round(SE.DuréeDay,digits=1),sep=" "),
-                  RangeDurée=paste0(round(minDuréeDay,digits=1)," - ", 
+                  RangeDurée=paste0(round(minDuréeDay,digits=1)," - ",
                                     round(maxDuréeDay,digits=1)),
                   Distmax=paste(round(DistmaxMoykm,digits=1),"±",
                                 round(SE.Distmaxkm,digits=1), sep=" "),
-                  RangeDist=paste0(round(minDistmaxkm,digits=1)," - ", 
-                                   round(maxDistmaxkm,digits=1))) %>% 
-  dplyr::select(NbId,NbLocs,Nbtrajet,DateMin,DateMax,
+                  RangeDist=paste0(round(minDistmaxkm,digits=1)," - ",
+                                 round(maxDistmaxkm,digits=1))) %>%
+  dplyr::select(NbId,NbLocs,Nbtrajet,DateMin,DateMax,DuréeTracking,
+                RangeDuréeTracking,
                 Durée,RangeDurée,Distmax,RangeDist)
 
 
@@ -100,6 +110,7 @@ summy.trips.juv<-raw_trips_rouzic23 %>%
               Nbtrajet=n(),
               DateMin=min(DateStart),
               DateMax=max(DateEnd),
+              DuréeTracking=difftime(max(DateEnd),min(DateStart),units="days"),
               Sex=sex[1],
               sero=sero[1],
               DuréeDay=mean(TripDurh)/24,
@@ -114,6 +125,10 @@ summy.juv<-summy.trips.juv %>%
               Nbtrajet=sum(Nbtrajet),
               DateMin=min(DateMin),
               DateMax=max(DateMax),
+              DuréeMoyTracking=mean(DuréeTracking),
+              SE.DuréeTracking=std.error(DuréeTracking),
+              DuréeTrackingMin=min(DuréeTracking),
+              DuréeTrackingMax=max(DuréeTracking),
               DuréeMoyDay=mean(DuréeDay),
               SE.DuréeDay=std.error(DuréeDay),
               minDuréeDay=min(DuréeDay),
@@ -122,7 +137,11 @@ summy.juv<-summy.trips.juv %>%
               SE.Distmaxkm=std.error(Distmaxkm),
               minDistmaxkm=min(Distmaxkm),
               maxDistmaxkm=max(Distmaxkm)) %>% 
-    dplyr::mutate(Durée=paste(round(DuréeMoyDay,digits=1),"±",
+    dplyr::mutate(DuréeTracking=paste(round(DuréeMoyTracking,digits=1),"±",
+                        round(SE.DuréeTracking,digits=1), sep=" "),
+              RangeDuréeTracking=paste0(round(DuréeTrackingMin, digits=1), " - ",
+                                        round(DuréeTrackingMax,digits=1)),
+              Durée=paste(round(DuréeMoyDay,digits=1),"±",
                               round(SE.DuréeDay,digits=1),sep=" "),
                   RangeDurée=paste0(round(minDuréeDay,digits=1)," - ", 
                                     round(maxDuréeDay,digits=1)),
@@ -131,6 +150,7 @@ summy.juv<-summy.trips.juv %>%
                   RangeDist=paste0(round(minDistmaxkm,digits=1)," - ", 
                                    round(maxDistmaxkm,digits=1))) %>% 
   dplyr::select(NbID,NbLocs,Nbtrajet,DateMin,DateMax,
+                DuréeTracking,RangeDuréeTracking,
                 Durée,RangeDurée,Distmax,RangeDist)
 
 #Detail of migration trip for 5 adults
@@ -157,7 +177,9 @@ Les tableaux comprennent tous les trajets bruts avec des gaps temporelles potent
 kbl(summy.ad,caption="Résumé des trajets bruts adultes", 
     digits=1,
     col.names=c("Nb Ind","Nb locs","Nb trajets","Date début",
-                "Date fin","Durée ± SE (jours)","Min-max durée (jours)",
+                "Date fin","Durée tracking ± SE (j)", "Min-max tracking (j)",
+                "Durée ± SE (j)",
+                "Min-max durée (j)",
                 "Distance max ± SE (km)", "Min-max distance (km)")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
@@ -173,7 +195,8 @@ kbl(summy.trips.ad,caption="Détail des trajets bruts individuels adultes",
 kbl(mig.ad,caption="Résumé des trajets de migration adultes", 
     digits=1,
     col.names=c("ID","Date début",
-                "Date fin","Durée (jours)",
+                "Date fin","Durée tracking ± SE (jours)",
+                "Min-max tracking (jours)", "Durée (jours)",
                 "Distance max (km)")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
@@ -192,7 +215,7 @@ Les juvéniles comprennent généralement un seul trajet comprenant la migration
 kbl(summy.trips.juv,caption="Détail des trajets bruts individuels juvéniles bruts", 
     digits = 1,
      col.names=c("ID","Nb locs","Nb trajets","Date début",
-                "Date fin","Sexe","Sero",
+                "Date fin","Durée Tracking", "Sexe","Sero",
                 "Durée (jours)",
                 "Distance max (km)")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
@@ -202,7 +225,9 @@ kbl(summy.trips.juv,caption="Détail des trajets bruts individuels juvéniles br
 kbl(summy.juv,caption="Résumé des trajets bruts de juvéniles", 
     digits = 1,
      col.names=c("Nb Ind","Nb locs","Nb trajets","Date début",
-                "Date fin","Durée ± SE (jours)","Min-max durée (jours)",
+                "Date fin","Durée tracking ± SE (jours)",
+                "Min-max tracking (jours)",  "Durée ± SE (jours)",
+                "Min-max durée (jours)",
                 "Distance max ± SE (km)", "Min-max distance (km)")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 

@@ -7,7 +7,11 @@ migration<-c("222289.28","233658.34","233669.50",
 #last incomplete trips for individuals (out of migration)
 last.incomplete<-c("201284.24","233660.63",
                    "233664.33","233672.49","235195.30",
-                   "235199.42","235202.26")
+                   "235199.42","235202.26",
+                   "235203.4","233663.31",
+                   "233663.35","233668.25",
+                   "233668.30","233668.57",
+                   "233672.21")
 
 #Problematic trips were interpolation cross Brittany at a small scale (<20 km)
 small.cross<-c("222450.10","222450.11",   #(<40km)

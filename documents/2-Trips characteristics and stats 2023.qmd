@@ -24,9 +24,11 @@ library(plotrix)
 
 source(here("R","trip_functions.R"))
 
+mycol<-turbo(2,begin=0.25, end=0.7)
+
 #trips
-load(here::here("data","NewlyCreatedData","clean_6_locs_AD_rouzic23.RData"))
-trips6<-trips_summary_ind(loc.clean.interp.rouzic,
+load(here::here("data","NewlyCreatedData","loc_clean_interp6_rouzic23.RData"))
+trips6<-trips_summary_ind(loc.clean.interp.rouzic23,
                                   colony=colo_coord_rouzic) %>% 
     dplyr::mutate(sero=as.factor(sero))
 
@@ -118,8 +120,8 @@ kbl(sum.lands,caption="Summary of nest attendance",
 #| message: false
 
 #trips
-load(here::here("data","NewlyCreatedData","clean_3_locs_AD_rouzic23.RData"))
-trips3<-trips_summary_ind(loc.clean.interp.rouzic,
+load(here::here("data","NewlyCreatedData","loc_clean_interp3_rouzic23.RData"))
+trips3<-trips_summary_ind(loc.clean.interp.rouzic23,
                                   colony=colo_coord_rouzic) %>%
     dplyr::mutate(sero=as.factor(sero))
 
@@ -183,8 +185,6 @@ trips6$Group<-"H6"
 trips3$Group<-"H3"
     
 trips<-rbind(trips6,trips3)
-
-mycol<-turbo(2,begin=0.25, end=0.7)
 
 
  #maximal distance
@@ -293,7 +293,7 @@ dist.sero<-ggplot(trips6,aes(x=sero,y=Distmaxkm, fill=sero,
                                        colour=sero) ) +
     geom_violin(trim=FALSE, alpha=0.2)+
   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
-  geom_jitter(width=0.1, show.legend = FALSE) +
+  geom_jitter(width=0.2) +
   scale_y_continuous(limits=c(0,400),breaks=seq(0,400,100),expand=c(0.01,0.01))+
  labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
   scale_fill_manual(values=mycol) +
@@ -308,7 +308,7 @@ dist.sero<-ggplot(trips6,aes(x=sero,y=Distmaxkm, fill=sero,
 dur.sero<-ggplot(trips6,aes(x=sero,y=TripDurh, 
                             fill=sero, colour=sero) )+
       geom_violin(trim=FALSE, alpha=0.2)+
-  geom_jitter(width=0.1, show.legend = FALSE)+
+  geom_jitter(width=0.2)+
   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
   labs(y="Trip duration (hrs)", x="",tag="b)") +
   scale_y_continuous(limits=c(0,200),expand=c(0.01,0.01))+
@@ -323,12 +323,12 @@ scale_colour_manual(values=mycol)+
 tot.sero<-ggplot(trips6,aes(x=sero,y=TotalPathkm, 
                                       fill=sero, colour=sero) )+
       geom_violin(trim=FALSE, alpha=0.2)+
-  geom_jitter(width=0.1, show.legend = FALSE)+
+  geom_jitter(width=0.2)+
   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
   labs(y="Total distance travelled (km)",x="",tag="c)") +
   scale_y_continuous(limits=c(0,1200),expand=c(0.01,0.01))+
-  scale_fill_manual(values=mycol) +
-  scale_colour_manual(values=mycol)+
+  scale_fill_manual(values=mycol, name="Infected") +
+  scale_colour_manual(values=mycol, name="Infected")+
   theme(text = element_text(size=10),
         axis.text = element_text(size=10),
         legend.text = element_text(size=10),
@@ -341,21 +341,132 @@ land<-land %>%
 att.sero<-ggplot(land,aes(x=Sero,y=LandDurh,
                      fill=Sero, colour=Sero))+
       geom_violin(trim=FALSE, alpha=0.2)+
-  geom_jitter(width=0.1,show.legend=F) +
+  geom_jitter(width=0.2) +
   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE) +
   labs(y="Nest attendance (hrs)",x="",tag="d)") +
-#  scale_y_continuous(limits=c(0,120),expand=c(0.01,0.01))+
+  scale_y_continuous(limits=c(0,60),expand=c(0.01,0.01))+
   scale_fill_manual(values=mycol)  +
   scale_colour_manual(values=mycol)+
-  theme(text = element_text(size=10),
+  theme(legend.position = "none",
+      text = element_text(size=10),
         axis.text = element_text(size=10),
         axis.title.x=element_blank())
 
+mylegend<-g_legend(tot.sero)
+
  # tiff("Figures/Figure 2 - Stats trip characteristics.tif",compression="lzw",
  #      res=600,width=6500,height=3500)
-grid.arrange(arrangeGrob(dist.sero,dur.sero,tot.sero,att.sero,
-                         ncol=2,nrow=2))
 
+tiff(here("outputs","Trip_characteristics_infected_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(dist.sero+ theme(legend.position="none"),
+                         dur.sero+ theme(legend.position="none"),
+                         tot.sero+ theme(legend.position="none"),
+                         att.sero+ theme(legend.position="none") ,
+                                     ncol=2),
+               mylegend, ncol=2,widths=c(1,0.1)) 
+
+    dev.off()  
+
+```
+
+# Comparison between sex
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+mycol2<-magma(n=2,begin=0.3,end=0.7)
+
+trips6$sex<-as.factor(trips6$sex)
+
+#maximal distance
+dist.sex<-ggplot(trips6,aes(x=sex,y=Distmaxkm, fill=sex,
+                                       colour=sex) ) +
+    geom_violin(trim=FALSE, alpha=0.2)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  geom_jitter(width=0.2) +
+  scale_y_continuous(limits=c(0,400),breaks=seq(0,400,100),expand=c(0.01,0.01))+
+ labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+  scale_fill_manual(values=mycol2) +
+  scale_colour_manual(values=mycol2)  +
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+
+#trip duration
+dur.sex<-ggplot(trips6,aes(x=sex,y=TripDurh, 
+                            fill=sex, colour=sex) )+
+      geom_violin(trim=FALSE, alpha=0.2)+
+  geom_jitter(width=0.2)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Trip duration (hrs)", x="",tag="b)") +
+  scale_y_continuous(limits=c(0,200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol2) +
+scale_colour_manual(values=mycol2)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#total distance travelled
+tot.sex<-ggplot(trips6,aes(x=sex,y=TotalPathkm, 
+                                      fill=sex, colour=sex) )+
+      geom_violin(trim=FALSE, alpha=0.2)+
+  geom_jitter(width=0.2)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Total distance travelled (km)",x="",tag="c)") +
+  scale_y_continuous(limits=c(0,1200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol2, name="Sex") +
+  scale_colour_manual(values=mycol2, name="Sex")+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+#nest attendance
+land<-land %>% 
+    dplyr::mutate(sero=as.factor(sero))
+
+att.sex<-ggplot(land,aes(x=sex,y=LandDurh,
+                     fill=sex, colour=sex))+
+      geom_violin(trim=FALSE, alpha=0.2)+
+  geom_jitter(width=0.2) +
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE) +
+  labs(y="Nest attendance (hrs)",x="",tag="d)") +
+  scale_y_continuous(limits=c(0,60),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol2)  +
+  scale_colour_manual(values=mycol2)+
+  theme(legend.position = "none",
+      text = element_text(size=10),
+        axis.text = element_text(size=10),
+        axis.title.x=element_blank())
+
+mylegendsex<-g_legend(tot.sex)
+
+ # tiff("Figures/Figure 2 - Stats trip characteristics.tif",compression="lzw",
+ #      res=600,width=6500,height=3500)
+
+tiff(here("outputs","Trip_characteristics_sex_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(dist.sex+ theme(legend.position="none"),
+                         dur.sex+ theme(legend.position="none"),
+                         tot.sex+ theme(legend.position="none"),
+                         att.sex+ theme(legend.position="none") ,
+                                     ncol=2),
+               mylegendsex, ncol=2,widths=c(1,0.1)) 
+
+    dev.off()  
 
 ```
 
@@ -438,7 +549,7 @@ grid.arrange(arrangeGrob(dist.deploy,dur.deploy,tot.deploy,att.deploy,
 
 ```
 
-# Statistical tests with deployment
+# Statistical tests with serology only
 
 ```{r}
 #| echo: false
@@ -447,7 +558,7 @@ grid.arrange(arrangeGrob(dist.deploy,dur.deploy,tot.deploy,att.deploy,
 #| message: false
 
 source(here::here("R","stats_functions.R"))
-var<-c('day','deploy','sero')
+var<-c('day','sero')
 
 #summary of all trips (26 adults)
 trips<-trips6 %>% 
@@ -465,14 +576,12 @@ lands<-land %>%
 newdat<-expand.grid(site=unique(trips$site),
                     day=seq(min(trips$day),
                             max(trips$day),1),
-                    sero=unique(trips$sero),
-                    deploy=unique(trips$deploy))
+                    sero=unique(trips$sero))
 
 newdatland<-expand.grid(site=unique(lands$site),
                     day=seq(min(lands$day),
                             max(lands$day),1),
-                    sero=unique(lands$sero),
-                    deploy=unique(lands$deploy))
+                    sero=unique(lands$sero))
 
 #stats for maximal distance
 ggplot(trips, aes(x=day, y=Distmaxkm, 
@@ -482,7 +591,7 @@ ggplot(trips, aes(x=day, y=Distmaxkm,
     ggtitle("Maximal distance")
 
 
-glm.dist<-lme(sqrt(Distmaxkm)~ day + deploy + sero,
+glm.dist<-lme(sqrt(Distmaxkm)~ day + sero,
               random= ~1| id,
               data=trips)
 
@@ -501,7 +610,7 @@ ggplot(trips, aes(x=day, y=TripDurh,
     ggtitle("Trip duration")
 
 
-glm.dur<-lme(sqrt(TripDurh)~ day + deploy + sero,
+glm.dur<-lme(sqrt(TripDurh)~ day + sero,
               random= ~1| id,
               data=trips)
 
@@ -520,7 +629,7 @@ ggplot(trips, aes(x=day, y=TotalPathkm,
     ggtitle("Total path")
 
 
-glm.path<-lme(sqrt(TotalPathkm)~ day + deploy + sero,
+glm.path<-lme(sqrt(TotalPathkm)~ day + sero,
               random= ~1| id,
               data=trips)
 
@@ -531,7 +640,7 @@ qqnorm(resid(glm.path))
 qqline(resid(glm.path))
 
 ##stats for time on land
-glm.land<-lme(sqrt(LandDurh)~ day + deploy + sero,
+glm.land<-lme(sqrt(LandDurh)~ day + sero,
               random= ~1| id,
               data=lands)
 
@@ -549,13 +658,13 @@ preddur<-predict_lme_results(glm.dur,newdat,var)
 predpath<-predict_lme_results(glm.path,newdat,var)
 predland<-predict_lme_results(glm.land,newdatland,var)
 
-mycol<-viridis(n=4)
+#mycol<-viridis(n=2)
 
-distgg<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=deploy:sero)) + 
+distlmmsero<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=sero)) + 
     geom_ribbon(data= data.frame(predist),
             aes(ymin= lower.CL^2, ymax= upper.CL^2,
                 y= NULL,
-                fill=deploy:sero),
+                fill=sero),
            alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=predist,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -563,21 +672,22 @@ geom_point(alpha=0.6) +
     scale_x_continuous(limits=c(0,120),
                      #  labels=daysx,
                        breaks=seq(0,120,20),
-                       expand=c(0.001,0.001)) +
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
      scale_y_continuous(limits=c(0,400,100),
                         breaks=seq(0,400,100),
                         expand=c(0.001,0.001)) + 
- scale_colour_manual(values=mycol) +
- scale_fill_manual(values=mycol)  +
+ scale_colour_manual(values=mycol,name="Infected") +
+ scale_fill_manual(values=mycol,name="Infected")  +
      theme_light()+
-    theme(legend.position="none",
+    theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
 
-durgg<-ggplot(trips, aes(x=day, y=TripDurh ,colour=deploy:sero)) + 
+durlmmsero<-ggplot(trips, aes(x=day, y=TripDurh ,colour=sero)) + 
     geom_ribbon(data= data.frame(preddur), 
             aes(ymin= lower.CL^2, ymax= upper.CL^2, 
                 y= NULL,
-                fill=deploy:sero), 
+                fill=sero), 
             alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=preddur,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -585,22 +695,23 @@ geom_point(alpha=0.6) +
     scale_x_continuous(limits=c(0,120),
                      #  labels=daysx,
                        breaks=seq(0,120,20),
-                       expand=c(0.001,0.001)) +
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
     scale_y_continuous(limits=c(0,200),
                        breaks=seq(0,200,50),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol) +
-    scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol,name="Infected") +
+    scale_fill_manual(values=mycol,name="Infected")  +
     theme_light()+
-    theme(legend.position="none",
+    theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
     
 
-pathgg<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=deploy:sero)) + 
+pathlmmsero<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=sero)) + 
     geom_ribbon(data= data.frame(predpath), 
             aes(ymin= lower.CL^2, ymax= upper.CL^2, 
                 y= NULL,
-                fill=deploy:sero), 
+                fill=sero), 
             alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=predpath,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -608,22 +719,23 @@ geom_point(alpha=0.6) +
     scale_x_continuous(limits=c(0,120),
                      #  labels=daysx,
                        breaks=seq(0,120,20),
-                       expand=c(0.001,0.001)) +
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
     scale_y_continuous(limits=c(0,1200),
                        breaks=seq(0,1200,300),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol) +
-    scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol,name="Infected") +
+    scale_fill_manual(values=mycol,name="Infected")  +
     theme_light()+
-    theme(legend.position="none",
+    theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
     
 
-landgg<-ggplot(lands, aes(x=day, y=LandDurh ,colour=deploy:sero)) + 
+landlmmsero<-ggplot(lands, aes(x=day, y=LandDurh ,colour=sero)) + 
     geom_ribbon(data= data.frame(predland), 
             aes(ymin= lower.CL^2, ymax= upper.CL^2, 
                 y= NULL,
-                fill=deploy:sero), 
+                fill=sero), 
             alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=predland,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -631,24 +743,31 @@ geom_point(alpha=0.6) +
     scale_x_continuous(limits=c(0,120),
                      #  labels=daysx,
                        breaks=seq(0,120,20),
-                       expand=c(0.001,0.001)) +
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
     scale_y_continuous(limits=c(0,60),
                        breaks=seq(0,60,15),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol) +
-    scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol,name="Infected") +
+    scale_fill_manual(values=mycol,name="Infected")  +
     theme_light()+
     theme(panel.grid.minor = element_blank()) 
     
-mylegend<-g_legend(landgg)
+mylegendlmmsero<-g_legend(distlmmsero)
 
-grid.arrange(arrangeGrob(distgg,
-                         durgg,
-                         pathgg,
-                         landgg+ theme(legend.position="none") ,
+tiff(here("outputs","LMM_predictions_sero_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(distlmmsero+ theme(legend.position="none"),
+                         durlmmsero+ theme(legend.position="none"),
+                         pathlmmsero+ theme(legend.position="none"),
+                         landlmmsero+ theme(legend.position="none") ,
                                      ncol=2),
-               mylegend, ncol=2,widths=c(1,0.1)) 
+               mylegendlmmsero, ncol=2,widths=c(1,0.1)) 
 
+dev.off()
 
 ```
 
@@ -663,7 +782,7 @@ Overall, no difference is detected in trip characteristics and nest attendance b
 #| message: false
 
 source(here::here("R","stats_functions.R"))
-var<-c('day','sex','sero')
+var<-c('day','sex')
 
 #summary of all trips (26 adults)
 trips<-trips6 %>% 
@@ -677,13 +796,13 @@ lands<-land %>%
 newdat<-expand.grid(site=unique(trips$site),
                     day=seq(min(trips$day),
                             max(trips$day),1),
-                    sero=unique(trips$sero),
+                #    sero=unique(trips$sero),
                     sex=unique(trips$sex))
 
 newdatland<-expand.grid(site=unique(lands$site),
                     day=seq(min(lands$day),
                             max(lands$day),1),
-                    sero=unique(lands$sero),
+             #       sero=unique(lands$sero),
                     sex=unique(lands$sex))
 
 #stats for maximal distance
@@ -694,7 +813,7 @@ ggplot(trips, aes(x=day, y=Distmaxkm,
     ggtitle("Maximal distance")
 
 
-glm.dist<-lme(sqrt(Distmaxkm)~ day + sex * sero,
+glm.dist<-lme(sqrt(Distmaxkm)~ day + sex,
               random= ~1| id,
               data=trips)
 
@@ -713,7 +832,7 @@ ggplot(trips, aes(x=day, y=TripDurh,
     ggtitle("Trip duration")
 
 
-glm.dur<-lme(sqrt(TripDurh)~ day + sex * sero,
+glm.dur<-lme(sqrt(TripDurh)~ day + sex,
               random= ~1| id,
               data=trips)
 
@@ -732,7 +851,7 @@ ggplot(trips, aes(x=day, y=TotalPathkm,
     ggtitle("Total path")
 
 
-glm.path<-lme(sqrt(TotalPathkm)~ day + sex * sero,
+glm.path<-lme(sqrt(TotalPathkm)~ day + sex,
               random= ~1| id,
               data=trips)
 
@@ -743,7 +862,7 @@ qqnorm(resid(glm.path))
 qqline(resid(glm.path))
 
 ##stats for time on land
-glm.land<-lme(sqrt(LandDurh)~ day + sex * sero,
+glm.land<-lme(sqrt(LandDurh)~ day + sex,
               random= ~1| id,
               data=lands)
 
@@ -761,13 +880,13 @@ preddur<-predict_lme_results(glm.dur,newdat,var)
 predpath<-predict_lme_results(glm.path,newdat,var)
 predland<-predict_lme_results(glm.land,newdatland,var)
 
-mycol<-magma(n=4,end=0.9)
 
-distgg<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=sex:sero)) + 
+
+distlmmsex<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=sex)) + 
     geom_ribbon(data= data.frame(predist),
             aes(ymin= lower.CL^2, ymax= upper.CL^2,
                 y= NULL,
-                fill=sex:sero),
+                fill=sex),
            alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=predist,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -779,17 +898,17 @@ geom_point(alpha=0.6) +
      scale_y_continuous(limits=c(0,400,100),
                         breaks=seq(0,400,100),
                         expand=c(0.001,0.001)) + 
- scale_colour_manual(values=mycol) +
- scale_fill_manual(values=mycol)  +
+ scale_colour_manual(values=mycol2,name="Sex") +
+ scale_fill_manual(values=mycol2,name="Sex")  +
      theme_light()+
-    theme(legend.position="none",
+    theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
 
-durgg<-ggplot(trips, aes(x=day, y=TripDurh ,colour=sex:sero)) + 
+durlmmsex<-ggplot(trips, aes(x=day, y=TripDurh ,colour=sex)) + 
     geom_ribbon(data= data.frame(preddur), 
             aes(ymin= lower.CL^2, ymax= upper.CL^2, 
                 y= NULL,
-                fill=sex:sero), 
+                fill=sex), 
             alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=preddur,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -801,18 +920,18 @@ geom_point(alpha=0.6) +
     scale_y_continuous(limits=c(0,200),
                        breaks=seq(0,200,50),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol) +
-    scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol2,name="Sex") +
+    scale_fill_manual(values=mycol2,name="Sex")  +
     theme_light()+
-    theme(legend.position="none",
+    theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
     
 
-pathgg<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=sex:sero)) + 
+pathlmmsex<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=sex)) + 
     geom_ribbon(data= data.frame(predpath), 
             aes(ymin= lower.CL^2, ymax= upper.CL^2, 
                 y= NULL,
-                fill=sex:sero), 
+                fill=sex), 
             alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=predpath,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -824,18 +943,18 @@ geom_point(alpha=0.6) +
     scale_y_continuous(limits=c(0,1200),
                        breaks=seq(0,1200,300),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol) +
-    scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol2,name="Sex") +
+    scale_fill_manual(values=mycol2,name="Sex")  +
     theme_light()+
-    theme(legend.position="none",
+    theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
     
 
-landgg<-ggplot(lands, aes(x=day, y=LandDurh ,colour=sex:sero)) + 
+landlmmsex<-ggplot(lands, aes(x=day, y=LandDurh ,colour=sex)) + 
     geom_ribbon(data= data.frame(predland), 
             aes(ymin= lower.CL^2, ymax= upper.CL^2, 
                 y= NULL,
-                fill=sex:sero), 
+                fill=sex), 
             alpha=0.4,colour = NA) +
 geom_point(alpha=0.6) +
  geom_line(data=predland,aes(x=day,y=emmean^2),lwd=1.5) +
@@ -847,20 +966,25 @@ geom_point(alpha=0.6) +
     scale_y_continuous(limits=c(0,60),
                        breaks=seq(0,60,15),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol) +
-    scale_fill_manual(values=mycol)  +
+  scale_colour_manual(values=mycol2,name="Sex") +
+    scale_fill_manual(values=mycol2,name="Sex")  +
     theme_light()+
     theme(panel.grid.minor = element_blank()) 
     
-mylegend<-g_legend(landgg)
+mylegendsex<-g_legend(pathlmmsex)
 
-grid.arrange(arrangeGrob(distgg,
-                         durgg,
-                         pathgg,
-                         landgg+ theme(legend.position="none") ,
+tiff(here("outputs","LMM_predictions_sex_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(distlmmsex+ theme(legend.position="none"),
+                         durlmmsex+ theme(legend.position="none"),
+                         pathlmmsex+ theme(legend.position="none"),
+                         landlmmsex+ theme(legend.position="none") ,
                                      ncol=2),
-               mylegend, ncol=2,widths=c(1,0.1)) 
-
+               mylegendsex, ncol=2,widths=c(1,0.1)) 
+dev.off()
  
 ```
 

@@ -85,7 +85,7 @@ all_rouzic<-move.rouzic@data %>%
 
 ```
 
-# Importing individual data
+# 2-Importing individual data
 
 Individual data (sex, date of equipment, breeding stage, period, serological status etc...) are stored in a separate file
 
@@ -189,7 +189,7 @@ distraw<-ggplot(raw_rouzic_2023,aes(x=datetime,y=distmax),group=id)+
 #plot time gaps
 diffraw<-ggplot(raw_rouzic_2023,aes(x=datetime,y=difftimemin),group=id)+
     geom_point(aes(color=id),show.legend=F) +
-    scale_y_continuous(limits=c(0,3600)) +
+    scale_y_continuous(limits=c(0,1500)) +
     scale_color_manual(values=colo.ind)+
     labs(x="Date",y="Time gaps between 2 locations (in min)")
 
@@ -197,65 +197,65 @@ grid.arrange(distraw,diffraw, ncol=2,
               top = grid::textGrob("Raw data",gp=gpar(fontsize=16,font=3)))
 
 #get overview of trips for each individual
-
-target<-c("France","United Kingdom","Spain","Morocco","Belgium",
-          "Netherlands","Ireland")
-
-#contours of countries
-shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
-   dplyr::filter(name %in% target) 
-
-for (a in 1:length(ids)){
-    
-    #extract data for 1 ind
-     indi<-raw_rouzic_2023 %>% 
-        dplyr::filter(id==ids[a])
-    
-     #get sf layer for 1 ind
-    indisf<-raw_rouzic_2023 %>% 
-        dplyr::filter(id==ids[a]) %>% 
-        st_as_sf(.,coords=c("long","lat")) %>% 
-        st_set_crs(st_crs(4326))
-    
-#assign shape according to life stage
-    shap<-ifelse(indi$stage[1]=="juvenile",17,16)
-
-    #create external files
-    png(here::here("outputs","Trips by individuals",
-                   paste0(ids[a],"_raw_trips.png")),
-        width=5000,height=3000,res=400)
-
-    #plot of maximal distance to the colony    
-   distrawind<-ggplot(indi,aes(x=datetime,y=distmax))+
-    geom_point(aes(color=datetime),shape=shap,show.legend=F) +
-    labs(x="Date",y="Maximal distance (km)")
- 
-   #plot of time gaps
-   diffrawind<-ggplot(indi,aes(x=datetime,y=difftimemin,
-                               group=stage))+
-    geom_point(aes(color=datetime),shape=shap,
-               show.legend=F) +
-    labs(x="Date",y="Time gap (in min)")
-   
-   #Map of all locations for 1 ind
-   map<-ggplot()+
-       geom_sf(data=indisf, aes(color=datetime),
-               shape=shap,
-               show.legend=F) +
-       geom_sf(data=shp,fill="grey90") +
-       
-       coord_sf(xlim=c(floor(st_bbox(indisf)[1]),
-                       ceiling(st_bbox(indisf)[3])),
-                ylim=c(floor(st_bbox(indisf)[2]),
-                       ceiling(st_bbox(indisf)[4]))) +
-  theme(panel.background = element_rect(fill = "lightblue"))
-
-   grid.arrange(distrawind,diffrawind, map,ncol=3,
-              top = grid::textGrob(paste0("Raw data ",ids[a]),
-                                   gp=gpar(fontsize=14,font=3)))
-  dev.off()
-  
-}
+# 
+# target<-c("France","United Kingdom","Spain","Morocco","Belgium",
+#           "Netherlands","Ireland")
+# 
+# #contours of countries
+# shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+#    dplyr::filter(name %in% target) 
+# 
+# for (a in 1:length(ids)){
+#     
+#     #extract data for 1 ind
+#      indi<-raw_rouzic_2023 %>% 
+#         dplyr::filter(id==ids[a])
+#     
+#      #get sf layer for 1 ind
+#     indisf<-raw_rouzic_2023 %>% 
+#         dplyr::filter(id==ids[a]) %>% 
+#         st_as_sf(.,coords=c("long","lat")) %>% 
+#         st_set_crs(st_crs(4326))
+#     
+# #assign shape according to life stage
+#     shap<-ifelse(indi$stage[1]=="juvenile",17,16)
+# 
+#     #create external files
+#     png(here::here("outputs","Trips by individuals",
+#                    paste0(ids[a],"_raw_trips.png")),
+#         width=5000,height=3000,res=400)
+# 
+#     #plot of maximal distance to the colony    
+#    distrawind<-ggplot(indi,aes(x=datetime,y=distmax))+
+#     geom_point(aes(color=datetime),shape=shap,show.legend=F) +
+#     labs(x="Date",y="Maximal distance (km)")
+#  
+#    #plot of time gaps
+#    diffrawind<-ggplot(indi,aes(x=datetime,y=difftimemin,
+#                                group=stage))+
+#     geom_point(aes(color=datetime),shape=shap,
+#                show.legend=F) +
+#     labs(x="Date",y="Time gap (in min)")
+#    
+#    #Map of all locations for 1 ind
+#    map<-ggplot()+
+#        geom_sf(data=indisf, aes(color=datetime),
+#                shape=shap,
+#                show.legend=F) +
+#        geom_sf(data=shp,fill="grey90") +
+#        
+#        coord_sf(xlim=c(floor(st_bbox(indisf)[1]),
+#                        ceiling(st_bbox(indisf)[3])),
+#                 ylim=c(floor(st_bbox(indisf)[2]),
+#                        ceiling(st_bbox(indisf)[4]))) +
+#   theme(panel.background = element_rect(fill = "lightblue"))
+# 
+#    grid.arrange(distrawind,diffrawind, map,ncol=3,
+#               top = grid::textGrob(paste0("Raw data ",ids[a]),
+#                                    gp=gpar(fontsize=14,font=3)))
+#   dev.off()
+#   
+# }
 
 SPDF <-st_as_sf(raw_rouzic_2023,
          coords = c("long", "lat"), 
@@ -350,7 +350,7 @@ grid.arrange(dist,dur,correl, land, ncol=2, nrow=2,
 
 ```{r}
 
-max.gap<-6
+max.gap<-3
 
 clean.trip.ad.nb23<-raw_trips_rouzic23 %>%
      dplyr::filter(TripDurh > dur.thres & 
@@ -358,9 +358,18 @@ clean.trip.ad.nb23<-raw_trips_rouzic23 %>%
                        stage=="adult" & 
                        maxDiffTimeh < max.gap) 
 
+
+#get incomplete trips
+incomp<-raw_rouzic_2023 %>% 
+    group_by(trip.id) %>% 
+    summarize(Max=max(datetime), Dist=dplyr::last(distmax)) %>% 
+    dplyr::filter(Dist>1) 
+
+
 cleanLocs.rouzic23<-raw_rouzic_2023 %>%
-    dplyr::filter(raw_rouzic_2023$trip.id %in% 
-                      clean.trip.ad.nb23$trip.id)
+    dplyr::filter(trip.id %in% 
+                      clean.trip.ad.nb23$trip.id) %>% 
+    dplyr::filter(!trip.id %in% incomp$trip.id)
 
 
 save(cleanLocs.rouzic23,
@@ -385,24 +394,22 @@ SPDF <-st_as_sf(cleanLocs.rouzic23,
 
 ```{r}
 
-
 load(here("data","NewlyCreatedData",
           paste0("clean_",max.gap,"_locs_AD_rouzic23.Rdata")))
 
 source(here::here("R","problem_trips.R"))
 
 ##Interpolation
-loc.clean.interp.rouzic<-interpol_pastecs(data=cleanLocs.rouzic23,
+loc.clean.interp.rouzic23<-interpol_pastecs(data=cleanLocs.rouzic23,
                                            time.int=reso,
                                            colony=colo_coord_rouzic) %>% 
-                         left_join(.,serol.rouzic, by=c("id")) %>% 
-                         dplyr::filter(!trip.id %in% last.incomplete) %>% 
-                         dplyr::filter(!trip.id %in% migration)
+                         left_join(.,serol.rouzic, by=c("id"))
 
- save(loc.clean.interp.rouzic,
-     file=here::here("data","NewlyCreatedData",paste0("clean_",max.gap,"_locs_AD_rouzic23.RData")))
 
-SPDF <-st_as_sf(loc.clean.interp.rouzic,
+ save(loc.clean.interp.rouzic23,
+     file=here::here("data","NewlyCreatedData",paste0("loc_clean_interp",max.gap,"_rouzic23.RData")))
+
+SPDF <-st_as_sf(loc.clean.interp.rouzic23,
          coords = c("long", "lat"), 
         crs = 4326)
 
@@ -413,16 +420,16 @@ SPDF <-st_as_sf(loc.clean.interp.rouzic,
           delete_layer =T)
  
 
-#  ids<-unique(loc.clean.interp.rouzic$id)
-# # 
+#  ids<-unique(loc.clean.interp.rouzic23$id)
+# #
 #  for (a in 1:length(ids)){
-#     
+# 
 # #     #extract data for 1 ind
-#      indi<-loc.clean.interp.rouzic %>%
+#      indi<-loc.clean.interp.rouzic23 %>%
 #         dplyr::filter(id==ids[a])
 # 
 #      #get sf layer for 1 ind
-#     indisf<-loc.clean.interp.rouzic %>%
+#     indisf<-loc.clean.interp.rouzic23 %>%
 #         dplyr::filter(id==ids[a]) %>%
 #         st_as_sf(.,coords=c("long","lat")) %>%
 #         st_set_crs(st_crs(4326))

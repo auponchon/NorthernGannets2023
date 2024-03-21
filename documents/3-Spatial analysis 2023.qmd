@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-# Separate kernels over infection an sex
+# Separate kernels over infection and sex
 
 ```{r}
 #| echo: false
@@ -25,12 +25,15 @@ library(RColorBrewer)
 source(here::here("R","trip_functions.R"))
 source(here::here("R","problem_trips.R"))
 
-load(here("data","NewlyCreatedData","clean_6_locs_AD_rouzic23.Rdata"))
+load(here("data","NewlyCreatedData","loc_clean_interp6_rouzic23.Rdata"))
 
 ext.brit<-terra::ext(300000,650000,5270000,5650000)
 
+mycol90<-turbo(n=2,begin=0.25, end=0.7)
+mycol50<-turbo(n=2,begin=0.2, end=0.75)
+
 #filter and project clean trips
-locs<-loc.clean.interp.rouzic %>% 
+locs<-loc.clean.interp.rouzic23 %>% 
     dplyr::mutate(sero=as.factor(sero),
                   sex=as.factor(sex),
                   deploy=as.factor(deploy)) %>% 
@@ -78,30 +81,48 @@ coord_rouzic<-colo_coord_rouzic %>%
 
 
 ##kernels pour les sero
-KUD.sero<- kernelUD(locs[,"sero"],
+loc.inf<-subset(locs,locs$sero==1)
+loc.noninf<-subset(locs,locs$sero==0)
+
+KUD.sero.inf<- kernelUD(loc.inf[,"site"],
                     same4all=T,
                     h=10000,
                     grid=1000)
-KUDvol.sero <- getvolumeUD(KUD.sero)
-ver90.sero<-getverticeshr(KUDvol.sero ,90) %>% 
+KUD.sero.inf <- getvolumeUD(KUD.sero.inf)
+ver90.sero.inf<-getverticeshr(KUD.sero.inf ,90) %>% 
     st_as_sf(.)
-# ver75.sero<-getverticeshr(KUDvol.sero ,75)%>% 
+# ver75.sero.inf<-getverticeshr(KUD.sero.inf ,75)%>% 
 #     st_as_sf(.)
-ver50.sero<-getverticeshr(KUDvol.sero ,50)%>% 
+ver50.sero.inf<-getverticeshr(KUD.sero.inf ,50)%>% 
     st_as_sf(.)
-# ver25.sero<-getverticeshr(KUDvol.sero ,25)%>% 
+# ver25.sero.inf<-getverticeshr(KUD.sero.inf ,25)%>% 
 #     st_as_sf(.)
+
+KUD.sero.noninf<- kernelUD(loc.noninf[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.noninf <- getvolumeUD(KUD.sero.noninf)
+ver90.sero.noninf<-getverticeshr(KUD.sero.noninf ,90) %>% 
+    st_as_sf(.)
+ver50.sero.noninf<-getverticeshr(KUD.sero.noninf ,50)%>% 
+    st_as_sf(.)
+
 
 kern.sero<-ggplot()+
    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver90.sero, fill=c("yellow","orchid"),
-                             colour=c("yellow","orchid"),
+     geom_sf(data=ver90.sero.noninf, fill=mycol90[1] ,
+                             colour=NA ,
+                             alpha=0.3) +
+      geom_sf(data=ver90.sero.inf, fill=mycol90[2] ,
+                             colour=NA,
+                             alpha=0.3) + 
+    geom_sf(data=ver50.sero.noninf, fill=mycol50[1] ,
+                             colour=NA ,
                              alpha=0.5) +
- #   geom_sf(data=ver75.sero, aes(fill=c(col[3],col[4]), alpha=0.3)) +
-    geom_sf(data=ver50.sero, fill=c("yellow4","darkorchid4"),
-                             colour=c("yellow4","darkorchid4"),
+    geom_sf(data=ver50.sero.inf, fill=mycol50[2],
+                             colour=NA,
                              alpha=0.5) +
- #   geom_sf(data=ver25.sero,  aes(fill=c(col[7],col[8]), alpha=0.3)) + 
     geom_sf(data=shp,fill="grey90") +
     geom_sf(data=coast) +
     geom_sf(data = coord_rouzic,
@@ -109,14 +130,10 @@ kern.sero<-ggplot()+
             colour="black",
             fill="yellow", 
             size=4) + 
-    labs(title="Distribution infected vs unfected") +
+    labs(title="Distribution infected vs uninfected") +
     coord_sf(xlim=ext.brit[c(1,2)],
              ylim=ext.brit[c(3,4)],
              expand=F) +
-
-    # scale_fill_gradientn(name="Bathymétrie",
-    #                      colors =ocean.pal,
-    #                      limits = c(- 200, 0))+
     annotation_scale(location = "br",
                      width_hint = 0.15,
                      pad_x = unit(0.7, "cm"),
@@ -127,37 +144,69 @@ kern.sero<-ggplot()+
                            pad_y = unit(0.8, "cm")) +
     theme_bw() 
 
-print(kern.sero)
 
+
+tiff(here::here("outputs","adults_distribution_kernel_sero.tif"),
+     width=3500,
+     height=3500,
+     res=500,
+     compression="lzw")
+print(kern.sero)
+dev.off()
+
+
+mycol2.50<-magma(n=2,begin=0.25,end=0.75)
+mycol2.90<-magma(n=2,begin=0.3,end=0.7)
 
 ##kernels for sex
+loc.fem<-subset(locs,locs$sex=="F")
+loc.mal<-subset(locs,locs$sex=="M")
 
-KUD.sex<- kernelUD(locs[,"sex"],
+KUD.sero.mal<- kernelUD(loc.mal[,"site"],
                     same4all=T,
                     h=10000,
                     grid=1000)
-KUDvol.sex <- getvolumeUD(KUD.sex)
-ver90.sex<-getverticeshr(KUDvol.sex ,90) %>% 
+KUD.sero.mal <- getvolumeUD(KUD.sero.mal)
+ver90.sero.mal<-getverticeshr(KUD.sero.mal ,90) %>% 
     st_as_sf(.)
-# ver75.sex<-getverticeshr(KUDvol.sex ,75)%>% 
+# ver75.sero.mal<-getverticeshr(KUD.sero.mal ,75)%>% 
 #     st_as_sf(.)
-ver50.sex<-getverticeshr(KUDvol.sex ,50)%>% 
+ver50.sero.mal<-getverticeshr(KUD.sero.mal ,50)%>% 
     st_as_sf(.)
-# ver25.sex<-getverticeshr(KUDvol.sex ,25)%>% 
+# ver25.sero.mal<-getverticeshr(KUD.sero.mal ,25)%>% 
+#     st_as_sf(.)
+
+KUD.sero.fem<- kernelUD(loc.fem[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.fem <- getvolumeUD(KUD.sero.fem)
+ver90.sero.fem<-getverticeshr(KUD.sero.fem ,90) %>% 
+    st_as_sf(.)
+# ver75.sero.fem<-getverticeshr(KUD.sero.fem ,75)%>% 
+#     st_as_sf(.)
+ver50.sero.fem<-getverticeshr(KUD.sero.fem ,50)%>% 
+    st_as_sf(.)
+# ver25.sero.fem<-getverticeshr(KUD.sero.fem ,25)%>% 
 #     st_as_sf(.)
 
 
 
   kern.sex<-ggplot()+
    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver90.sex, fill=c("yellow","orchid"),
-                             colour=c("yellow","orchid"),
-                             alpha=0.5) +
- #   geom_sf(data=ver75.sex, aes(fill=c(col[3],col[4]), alpha=0.3)) +
-    geom_sf(data=ver50.sex, fill=c("yellow4","darkorchid4"),
-                             colour=c("yellow4","darkorchid4"),
-                             alpha=0.5) +
- #   geom_sf(data=ver25.sex,  aes(fill=c(col[7],col[8]), alpha=0.3)) + 
+    geom_sf(data=ver90.sero.fem, fill=mycol2.90[1] ,
+                             colour=NA,
+                             alpha=0.2) + 
+      geom_sf(data=ver90.sero.mal, fill=mycol2.90[2] ,
+                             colour=NA ,
+                             alpha=0.2) +
+         geom_sf(data=ver50.sero.fem, fill=mycol2.50[1],
+                             colour=NA,
+                             alpha=0.6) +
+    geom_sf(data=ver50.sero.mal, fill=mycol2.50[2] ,
+                             colour=NA ,
+                             alpha=0.6) +
+
     geom_sf(data=shp,fill="grey90") +
     geom_sf(data=coast) +
     geom_sf(data = coord_rouzic,
@@ -169,9 +218,6 @@ ver50.sex<-getverticeshr(KUDvol.sex ,50)%>%
              ylim=ext.brit[c(3,4)],
              expand=F) +
   labs(title="Distribution males vs females") +
-    # scale_fill_gradientn(name="Bathymétrie",
-    #                      colors =ocean.pal,
-    #                      limits = c(- 200, 0))+
     annotation_scale(location = "br",
                      width_hint = 0.15,
                      pad_x = unit(0.7, "cm"),
@@ -182,7 +228,216 @@ ver50.sex<-getverticeshr(KUDvol.sex ,50)%>%
                            pad_y = unit(0.8, "cm")) +
     theme_bw() 
 
+  tiff(here::here("outputs","adults_distribution_kernel_sex.tif"),
+     width=3500,
+     height=3500,
+     res=500,
+     compression="lzw")
+
 print(kern.sex)
+
+dev.off()
+
+
+##kernels for sex over time (by month)
+
+maxjuil<-as.POSIXct(strptime("2023-07-31 23:59:59",
+                             format="%F %H:%M:%S"),time="tz")
+maxaout<-as.POSIXct(strptime("2023-08-31 23:59:59",
+                             format="%F %H:%M:%S"),time="tz")
+
+loc.fem.juil<-subset(locs,locs$sex=="F" & locs$datetime <= maxjuil)
+loc.fem.aout<-subset(locs,locs$sex=="F" & 
+                         locs$datetime > maxjuil & 
+                         locs$datetime <= maxaout)
+loc.fem.sept<-subset(locs,locs$sex=="F" & locs$datetime > maxaout)
+loc.mal.juil<-subset(locs,locs$sex=="M" & locs$datetime <= maxjuil)
+loc.mal.aout<-subset(locs,locs$sex=="M" & 
+                         locs$datetime <= maxaout & 
+                         locs$datetime > maxjuil)
+loc.mal.sept<-subset(locs,locs$sex=="M" & locs$datetime > maxaout)
+
+KUD.sero.mal.juil<- kernelUD(loc.mal.juil[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.mal.juil <- getvolumeUD(KUD.sero.mal.juil)
+ver90.sero.mal.juil<-getverticeshr(KUD.sero.mal.juil ,90) %>% 
+    st_as_sf(.)
+ver50.sero.mal.juil<-getverticeshr(KUD.sero.mal.juil ,50)%>% 
+    st_as_sf(.)
+
+KUD.sero.mal.aout<- kernelUD(loc.mal.aout[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.mal.aout <- getvolumeUD(KUD.sero.mal.aout)
+ver90.sero.mal.aout<-getverticeshr(KUD.sero.mal.aout ,90) %>% 
+    st_as_sf(.)
+ver50.sero.mal.aout<-getverticeshr(KUD.sero.mal.aout ,50)%>% 
+    st_as_sf(.)
+
+KUD.sero.mal.sept<- kernelUD(loc.mal.sept[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.mal.sept <- getvolumeUD(KUD.sero.mal.sept)
+ver90.sero.mal.sept<-getverticeshr(KUD.sero.mal.sept ,90) %>% 
+    st_as_sf(.)
+ver50.sero.mal.sept<-getverticeshr(KUD.sero.mal.sept ,50)%>% 
+    st_as_sf(.)
+
+#females
+KUD.sero.fem.juil<- kernelUD(loc.fem.juil[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.fem.juil <- getvolumeUD(KUD.sero.fem.juil)
+ver90.sero.fem.juil<-getverticeshr(KUD.sero.fem.juil ,90) %>% 
+    st_as_sf(.)
+ver50.sero.fem.juil<-getverticeshr(KUD.sero.fem.juil ,50)%>% 
+    st_as_sf(.)
+
+KUD.sero.fem.aout<- kernelUD(loc.fem.aout[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.fem.aout <- getvolumeUD(KUD.sero.fem.aout)
+ver90.sero.fem.aout<-getverticeshr(KUD.sero.fem.aout ,90) %>% 
+    st_as_sf(.)
+ver50.sero.fem.aout<-getverticeshr(KUD.sero.fem.aout ,50)%>% 
+    st_as_sf(.)
+
+KUD.sero.fem.sept<- kernelUD(loc.fem.sept[,"site"],
+                    same4all=T,
+                    h=10000,
+                    grid=1000)
+KUD.sero.fem.sept <- getvolumeUD(KUD.sero.fem.sept)
+ver90.sero.fem.sept<-getverticeshr(KUD.sero.fem.sept ,90) %>% 
+    st_as_sf(.)
+ver50.sero.fem.sept<-getverticeshr(KUD.sero.fem.sept ,50)%>% 
+    st_as_sf(.)
+
+
+  kern.sex.juil<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver90.sero.fem.juil, fill=mycol2.90[1] ,
+                             colour=NA,
+                             alpha=0.2) + 
+      geom_sf(data=ver90.sero.mal.juil, fill=mycol2.90[2] ,
+                             colour=NA ,
+                             alpha=0.2) +
+         geom_sf(data=ver50.sero.fem.juil, fill=mycol2.50[1],
+                             colour=NA,
+                             alpha=0.6) +
+    geom_sf(data=ver50.sero.mal.juil, fill=mycol2.50[2] ,
+                             colour=NA ,
+                             alpha=0.6) +
+
+    geom_sf(data=shp,fill="grey90") +
+    geom_sf(data=coast) +
+    geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+    coord_sf(xlim=ext.brit[c(1,2)],
+             ylim=ext.brit[c(3,4)],
+             expand=F) +
+  labs(title="July 2023") +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+
+  
+    kern.sex.aout<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver90.sero.fem.aout, fill=mycol2.90[1] ,
+                             colour=NA,
+                             alpha=0.2) + 
+      geom_sf(data=ver90.sero.mal.aout, fill=mycol2.90[2] ,
+                             colour=NA ,
+                             alpha=0.2) +
+         geom_sf(data=ver50.sero.fem.aout, fill=mycol2.50[1],
+                             colour=NA,
+                             alpha=0.6) +
+    geom_sf(data=ver50.sero.mal.aout, fill=mycol2.50[2] ,
+                             colour=NA ,
+                             alpha=0.6) +
+
+    geom_sf(data=shp,fill="grey90") +
+    geom_sf(data=coast) +
+    geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+    coord_sf(xlim=ext.brit[c(1,2)],
+             ylim=ext.brit[c(3,4)],
+             expand=F) +
+  labs(title="August 2023") +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+    
+       kern.sex.sept<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver90.sero.fem.sept, fill=mycol2.90[1] ,
+                             colour=NA,
+                             alpha=0.2) + 
+      geom_sf(data=ver90.sero.mal.sept, fill=mycol2.90[2] ,
+                             colour=NA ,
+                             alpha=0.2) +
+         geom_sf(data=ver50.sero.fem.sept, fill=mycol2.50[1],
+                             colour=NA,
+                             alpha=0.6) +
+    geom_sf(data=ver50.sero.mal.sept, fill=mycol2.50[2] ,
+                             colour=NA ,
+                             alpha=0.6) +
+
+    geom_sf(data=shp,fill="grey90") +
+    geom_sf(data=coast) +
+    geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+    coord_sf(xlim=ext.brit[c(1,2)],
+             ylim=ext.brit[c(3,4)],
+             expand=F) +
+  labs(title="Sept 2023") +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw()  
+    
+  tiff(here::here("outputs","adults_distribution_kernel_sex_time.tif"),
+     width=6000,
+     height=3000,
+     res=500,
+     compression="lzw")
+
+grid.arrange(kern.sex.juil,kern.sex.aout,kern.sex.sept,
+             nrow=1,ncol=3)
+
+dev.off()
 ```
 
 # GIF animation

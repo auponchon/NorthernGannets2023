@@ -1,0 +1,108 @@
+---
+title: "6-Comparison all trips 2005-2023"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+# 1. Import all processed data
+
+```{r}
+library(here)
+library(tidyverse)
+library(sf)
+library(kableExtra)
+library(grid)
+library(gridExtra)
+
+source(here::here("R","trip_functions.R"))
+
+load(here::here("data","NewlyCreatedData",
+                "loc_clean_interp2rouzic2005-2019.RData"))
+load(here::here("data","NewlyCreatedData",
+                "loc_clean_interp6_rouzic23.RData"))
+load(here::here("data","NewlyCreatedData",
+                "loc_clean_interp_rouzic2022.RData"))
+
+
+rouz05.19<-loc.clean.interp.rouzic05.19 %>% 
+    mutate(year=year(datetime)) %>% 
+    dplyr::select(year,id,datetime,long,lat,
+                  distmax,distadj,totalpath,travelNb,trip.id)
+
+
+rouz23<-loc.clean.interp.rouzic23 %>% 
+     mutate(year=year(datetime)) %>% 
+    dplyr::select(year,id,datetime,long,lat,
+                  distmax,distadj,totalpath,travelNb,trip.id)
+
+rouz22<-loc.interp.rouzic %>% 
+     mutate(year=year(datetime)) %>% 
+    dplyr::select(year,id,datetime,long,lat,
+                  distmax,distadj,totalpath,travelNb,trip.id)
+
+
+rouz.all<-rbind(rouz05.19,rouz22,rouz23) 
+
+
+#select borders
+target<-c("France","United Kingdom","Spain","Belgium",
+          "Netherlands", "Germany","Ireland","Isle of Man",
+          "Jersey" ,"Guernsey"  ,"Åland")  
+
+coord_rouzic<-colo_coord_rouzic %>% 
+    sf::st_as_sf(., coords = c("long","lat"))
+
+
+ indisf<-rouz.all %>%
+     mutate(year=factor(as.factor(year),
+                        levels=c(2023,2022,2019,2017,2016,2015,2014,
+                                 2013,2012, 2011,2010, 2006,2005)) )
+     
+ 
+ #contours of countries
+shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+    dplyr::filter(name %in% target) 
+
+#coastlines
+coast<-ne_coastline(scale = 10, returnclass = "sf") 
+  
+    #create external files
+tiff(here::here("outputs","Clean_trips_2005-2023.png"),
+        width=4000,height=3000,res=400,
+     compression="lzw")
+
+   #Map of all locations for 1 ind
+   map<-ggplot()+
+            geom_path(data = indisf,
+            aes(x=long,y=lat,
+                group=year,
+                color=year),
+                 show.legend = T) +
+       geom_sf(data=shp,fill="grey90") +
+           geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+        coord_sf(xlim=c(-9,2),
+             ylim=c(46.8,52.0),
+             expand=F) +
+   scale_colour_manual(values=turbo(13),  name="Year") +
+       labs(x="",y="") +
+     annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+       theme_bw() 
+
+
+print(map)
+
+dev.off()
+
+```

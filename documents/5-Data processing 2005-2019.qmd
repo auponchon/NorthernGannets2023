@@ -1,0 +1,521 @@
+---
+title: "Data processing 2005-2017"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+## 1. Data processing from txt files 2005 and 2006
+
+```{r}
+
+library(here)
+library(tidyverse)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(grid)
+library(gridExtra)
+library(kableExtra)
+
+source(here::here("R","trip_functions.R"))
+
+gps_type1<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type1"),
+                      full.names = T)
+name.file1<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type1"),
+                      full.names = F) %>% 
+           str_remove(., ".TXT")
+
+dat1.2005.2006<-NULL
+
+for (i in 1:length(gps_type1)){
+    print(i)
+    
+ file1<-read.table(gps_type1[i],
+                   header=F,
+                   skip=14,
+                   sep=" ")
+
+datetime<-as.POSIXct(paste(as.Date(file1$V1,format="%d.%m.%Y"),
+                        file1$V2, 
+                        sep=" "),
+                     format="%F %H:%M:%S",tz="")
+
+id<-name.file1[i]
+ 
+tot<-data.frame(year=year(datetime),
+                id=id,
+                datetime=datetime,
+                long=file1$V5,
+                lat=file1$V3)
+
+#account for differences in file format
+if(max(as.numeric(tot$lat))>100){
+    tot$long<-as.numeric(substr(tot$long, 1, 1)) + 
+        (as.numeric(substr(tot$long, 2, 7)) /60)
+    tot$lat<-as.numeric(substr(tot$lat, 1, 2)) + 
+        (as.numeric(substr(tot$lat, 3, 7)) /60)
+}
+
+tot$long<-ifelse(file1$V6=="W",-tot$long,tot$long)
+   
+# plot(tot$long,tot$lat,
+#      pch=16,
+#      main=tot$id[1])
+
+
+dat1.2005.2006<-rbind(dat1.2005.2006,tot)    
+}
+```
+
+## 2. Data processing from log files 2005 and 2006
+
+```{r}
+gps_type2<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type2"),
+                      full.names = T)
+name.file2<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type2"),
+                      full.names = F) %>% 
+           str_remove(., ".log") %>% 
+          str_replace(.,"-",".")
+
+dat2.2005.2006<-NULL
+
+for (i in 1:length(gps_type2)){
+    print(i)
+    
+ file2<-read.table(gps_type2[i],
+                   header=F,
+                   skip=2)
+
+datetime<-as.POSIXct(paste(as.Date(file2$V8,format="%m/%d/%Y"),
+                        file2$V7, 
+                        sep=" "),
+                     format="%F %H:%M:%S",tz="")
+
+id<-name.file2[i]
+ 
+tot<-data.frame(year=year(datetime),
+                id=id,
+                datetime=datetime,
+                long=file2$V16,
+                lat=file2$V17)
+
+# plot(tot$long,tot$lat,
+#      pch=16,
+#      main=tot$id[1])
+
+
+dat2.2005.2006<-rbind(dat2.2005.2006,tot)    
+}
+```
+
+# 3. Data processing 2006/2010
+
+```{r}
+
+gps_type3<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type3"),
+                      full.names = T)
+name.file3<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type3"),
+                      full.names = F) %>% 
+           str_remove(., ".txt") %>% 
+           str_remove(., "GPS-") %>% 
+           str_replace(.,"-",".")
+
+dat3.2010<-NULL
+
+for (i in 1:length(gps_type3)){
+    print(i)
+    
+ file3<-read.table(gps_type3[i],
+                   header=F)
+
+datetime<-as.POSIXct(paste(as.Date(file3$V2,format="%d/%m/%Y"),
+                        file3$V1, 
+                        sep=" "),
+                     format="%F %H:%M:%S",tz="")
+
+id<-name.file3[i]
+ 
+tot<-data.frame(year=year(datetime),
+                id=id,
+                datetime=datetime,
+                long=file3$V3,
+                lat=file3$V4) %>% 
+    dplyr::filter(row_number() %% 30 == 1)
+
+# plot(tot$long,tot$lat,
+#      pch=16,
+#      main=tot$id[1])
+
+
+dat3.2010<-rbind(dat3.2010,tot)    
+}
+```
+
+# 4. Data processing 2011-2012
+
+```{r}
+gps_type4<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type4"),
+                      full.names = T)
+name.file4<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type4"),
+                      full.names = F) %>% 
+           str_remove(., ".csv") %>% 
+           str_remove(., "-Rouzic") %>% 
+           str_remove(., "_t") %>% 
+           str_replace(.,"-",".")
+
+dat4.2011.2012<-NULL
+
+for (i in 1:length(gps_type4)){
+    print(i)
+    
+ #wrong.date<-c("2011_Bird","2012_Bird","2014_Bird","2015_Bird")
+    
+ file4<-read.table(gps_type4[i],
+                   header=T,
+                   sep=",")
+
+ datetime<-as.POSIXct(paste(as.Date(file4$Date,format="%d/%m/%y"),
+                        file4$Time, 
+                        sep=" "),
+                     format="%F %H:%M:%S",tz="")
+
+
+id<-name.file4[i]
+ 
+tot<-data.frame(year=year(datetime),
+                id=id,
+                datetime=datetime,
+                long=file4$Longitude,
+                lat=file4$Latitude) 
+
+# plot(tot$long,tot$lat,
+#      pch=16,
+#      main=tot$id[1])
+
+
+dat4.2011.2012<-rbind(dat4.2011.2012,tot)    
+}
+```
+
+# 5. Data processing 2013-2019
+
+```{r}
+gps_type5<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type5"),
+                      full.names = T)
+name.file5<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type5"),
+                      full.names = F) %>% 
+           str_remove(., ".csv") %>% 
+           str_remove(., "-Rouzic") %>% 
+           str_remove(., "_t") %>% 
+           str_replace(.,"-",".")
+
+dat5.2013.2019<-NULL
+
+for (i in 1:length(gps_type5)){
+    print(i)
+    
+    
+ file5<-read.table(gps_type5[i],
+                   header=T,
+                   sep=",")
+
+ datetime<-as.POSIXct(paste(as.Date(file5$Date,format="%Y/%m/%d"),
+                        file5$Time, 
+                        sep=" "),
+                     format="%F %H:%M:%S",tz="")
+
+
+id<-name.file5[i]
+ 
+tot<-data.frame(year=year(datetime),
+                id=id,
+                datetime=datetime,
+                long=file5$Longitude,
+                lat=file5$Latitude) 
+
+# plot(tot$long,tot$lat,
+#      pch=16,
+#      main=tot$id[1])
+
+
+dat5.2013.2019<-rbind(dat5.2013.2019,tot)    
+}     
+     
+```
+
+# 6. Merging all data and defining trips
+
+```{r}
+
+
+all.dat<-rbind(dat1.2005.2006,dat2.2005.2006,dat3.2010,dat4.2011.2012,
+               dat5.2013.2019) %>% 
+    dplyr::mutate(id=as.factor(id))
+
+ids<-unique(levels(all.dat$id))
+colo.ind<-tim.colors(length(unique(all.dat$year)))
+
+#create new object with distance and time differences
+raw_rouzic_2005_2019<-NULL
+
+#loop through each individual 
+for (i in 1:length(ids)){
+    ind.loc<-all.dat %>% 
+        dplyr::filter(id==ids[i]) %>% 
+        mutate(distmax=0,
+               distadj=0,
+               totalpath=0,
+               difftimemin=0,
+               travelNb=0,
+               onlandNb=0)
+  
+    print(c("Processing individual ", i))
+      
+  #loop through each line to calculate distance and time difference with previous location
+for (l in 2:nrow(ind.loc)){
+    
+ind.loc[l,"distadj"]<-rdist.earth(ind.loc[l,c("long","lat")],
+                                   ind.loc[l-1,c("long","lat")], 
+                                  miles = F)
+ind.loc[l,"difftimemin"]<-difftime(ind.loc[l,"datetime"],
+                                   ind.loc[l-1,"datetime"], 
+                                   units="mins")
+ind.loc[l,"distmax"]<-rdist.earth(ind.loc[l,c("long","lat")],
+                                   colo_coord_rouzic[c(1,2)], 
+                                  miles = F)
+}
+
+#define periods on land and at sea   
+ind.loc<-define_trips(data=ind.loc,
+                      dist.min=dist.threshold)
+raw_rouzic_2005_2019<-rbind(raw_rouzic_2005_2019,ind.loc)    
+} #end of loop on individuals
+
+
+raw_rouzic_2005_2019$trip.id<-paste(raw_rouzic_2005_2019$id,raw_rouzic_2005_2019$travelNb,sep=".")
+
+raw_rouzic_2005_2019<-add_missing_return(raw_rouzic_2005_2019[, -which(names(raw_rouzic_2005_2019) == "year")],
+                                  time.int=reso,colony=colo_coord_rouzic)
+
+save(raw_rouzic_2005_2019,file=here("data","NewlyCreatedData","rawLocRouzic05-19.RData"))
+
+load(here("data","NewlyCreatedData","rawLocRouzic05-19.RData"))
+
+raw_rouzic_2005_2019<-raw_rouzic_2005_2019 %>% 
+    dplyr::mutate(date=yday(datetime)+
+                      hour(datetime)/24+
+                      minute(datetime)/60+
+                      second(datetime)/3600,
+                  year=year(datetime))
+
+
+#plot time gaps
+diffraw<-ggplot(raw_rouzic_2005_2019,aes(x=date,y=difftimemin),
+                group=as.factor(year))+
+    geom_point(aes(color=as.factor(year)),show.legend=F) +
+    scale_y_continuous(limits=c(0,2000)) +
+    scale_color_manual(values=colo.ind)+
+    labs(x="Date",y="Time gaps between 2 locations (in min)")
+
+#get overview of trips for each individual
+
+target<-c("France","United Kingdom","Belgium",
+          "Netherlands","Ireland")
+
+#contours of countries
+shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+   dplyr::filter(name %in% target) 
+
+annee<-sort(unique(raw_rouzic_2005_2019$year))
+
+# for (a in 1:length(annee)){
+#     
+#     #extract data for 1 ind
+#      indi<-raw_rouzic_2005_2017 %>% 
+#         dplyr::filter(year==annee[a])
+#     
+#      #get sf layer for 1 ind
+#     indisf<-raw_rouzic_2005_2017 %>% 
+#         dplyr::filter(year==annee[a]) %>% 
+#         st_as_sf(.,coords=c("long","lat")) %>% 
+#         st_set_crs(st_crs(4326))
+#     
+# 
+#     #create external files
+#     png(here::here("outputs","Trips by individuals",
+#                    paste0(annee[a],"_raw_trips.png")),
+#         width=5000,height=3000,res=400)
+# 
+#     #plot of maximal distance to the colony    
+#    distrawind<-ggplot(indi,aes(x=datetime,y=distmax))+
+#     geom_point(aes(color=id),show.legend=F) +
+#     labs(x="Date",y="Maximal distance (km)")
+#  
+#    #plot of time gaps
+#    diffrawind<-ggplot(indi,aes(x=datetime,y=difftimemin))+
+#     geom_point(aes(color=id),show.legend=F) +
+#     labs(x="Date",y="Time gap (in min)")
+#    
+#    #Map of all locations for 1 ind
+#    map<-ggplot()+
+#        geom_sf(data=indisf, aes(color=id),
+#                show.legend=F) +
+#        geom_sf(data=shp,fill="grey90") +
+#        
+#        coord_sf(xlim=c(floor(st_bbox(indisf)[1]),
+#                        ceiling(st_bbox(indisf)[3])),
+#                 ylim=c(floor(st_bbox(indisf)[2]),
+#                        ceiling(st_bbox(indisf)[4]))) +
+#   theme(panel.background = element_rect(fill = "lightblue"))
+# 
+#    grid.arrange(distrawind,diffrawind, map,ncol=3,
+#               top = grid::textGrob(paste0("Raw data ",annee[a]),
+#                                    gp=gpar(fontsize=14,font=3)))
+#   dev.off()
+#   
+# }
+
+SPDF <-st_as_sf(raw_rouzic_2005_2019,
+         coords = c("long", "lat"), 
+        crs = 4326)
+
+ # st_write(SPDF,
+ #           dsn=here("data","NewlyCreatedData","shapefiles"),
+ #          layer="raw_trips_all_rouzic05-19",
+ #          driver="ESRI Shapefile",
+ #          delete_layer =T)
+ # 
+
+load(here("data","NewlyCreatedData","rawLocRouzic05-19.Rdata"))
+ids<-unique(levels(raw_rouzic_2005_2019$id))
+colo.ind<-tim.colors(length(ids))
+
+
+raw_rouzic_2005_2019<-raw_rouzic_2005_2019 %>% 
+    dplyr::mutate(stage=NA,
+                  sex=NA,
+                  deploy=NA,
+                  sero=NA)
+
+
+#summarize all trips and periods on land by individuals
+raw_trips_rouzic2005_2019<-trips_summary_ind(raw_rouzic_2005_2019,
+                                      colony=colo_coord_rouzic) %>% 
+                    dplyr::filter(Distmaxkm>1) %>% 
+    mutate(year=as.factor(lubridate::year(DateEnd)))
+
+raw_land_rouzic2005_2019<-land_summary_ind(raw_rouzic_2005_2019,colony=colo_coord_rouzic)%>% 
+    mutate(year=as.factor(lubridate::year(DateEnd)))
+
+#summarize all trips at the population level
+summy.trips<-raw_trips_rouzic2005_2019 %>% 
+    group_by(id) %>% 
+    summarize(Nbtrip=n(),
+              Mindurh=min(TripDurh),
+              MaxDist=max(Distmaxkm),
+              maxDiffh=max(maxDiffTimeh),
+              minLocs=min(nlocs),
+              NbLocs=sum(nlocs))
+
+#details individual trips
+kbl(summy.trips,caption="Summary of raw trips") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+#summarize all periods on land at the population level
+summy.land<-raw_land_rouzic2005_2019 %>% 
+    group_by(id) %>% 
+    summarize(Nbland=n(),
+              Mindurh=min(LandDurh),
+              maxDiffh=max(maxDiffTimeh),
+              minLocs=min(nlocs),
+              NbLocs=sum(nlocs))
+
+#details individual trips
+kbl(summy.trips,caption="Summary of raw trips") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+##plot trip and land periods
+dist<-ggplot(raw_trips_rouzic2005_2019,aes(x=DateEnd,y=Distmaxkm))+
+    geom_point(aes(color=year),show.legend=F) +
+ #   scale_shape_manual(values=c(16,17)) +
+    scale_y_continuous(limits=c(0,500)) +
+    labs(x="Date",y="Maximal distance to colony (km)")
+
+dur<-ggplot(raw_trips_rouzic2005_2019,aes(x=DateEnd,y=TripDurh))+
+    geom_point(aes(color=year),show.legend=F) +
+
+    labs(x="Date",y="Trip duration (h)")
+
+correl<-ggplot(raw_trips_rouzic2005_2019,aes(x=log(TripDurh),y=log(Distmaxkm)))+
+    geom_point(aes(color=year), show.legend=F) +
+ #   scale_colour_datetime(low=viridis(100)[1],high=viridis(100)[100]) +
+    labs(x="log Trip duration (h)",y="log Maximal distance to colony (km)")
+
+land<-ggplot(raw_land_rouzic2005_2019,aes(x=DateEnd,y=LandDurh ,
+                                          group=year))+
+    geom_point(aes(color=year), show.legend=F) +
+
+    labs(x="Date",y="Periods on land (h)")
+
+grid.arrange(dist,dur,correl, land, ncol=2, nrow=2,
+              top = textGrob("Raw trip features",gp=gpar(fontsize=16,font=3)))
+
+
+max.gap<-2
+
+clean.trip.ad.nb05.19<-raw_trips_rouzic2005_2019 %>%
+     dplyr::filter(TripDurh > dur.thres & 
+                       nlocs >= row.thres &
+                       maxDiffTimeh < max.gap) 
+
+#get incomplete trips
+incomp<-raw_rouzic_2005_2019 %>% 
+    group_by(trip.id) %>% 
+    summarize(Max=max(datetime), Dist=dplyr::last(distmax)) %>% 
+    dplyr::filter(Dist>1) 
+
+
+cleanLocs.rouzic05.19<-raw_rouzic_2005_2019 %>%
+    dplyr::filter(trip.id %in% 
+                      clean.trip.ad.nb05.19$trip.id) %>% 
+    dplyr::filter(!trip.id %in% incomp$trip.id)
+
+
+save(cleanLocs.rouzic05.19,
+     file=here::here("data","NewlyCreatedData",
+               paste0("clean_",max.gap,"_locs_AD_rouzic2005-2019.Rdata")))
+
+
+SPDF <-st_as_sf(cleanLocs.rouzic05.19,
+         coords = c("long", "lat"), 
+        crs = 4326)
+
+ st_write(SPDF,
+           dsn=here("data","NewlyCreatedData","shapefiles"),
+          layer=paste0("clean_",max.gap,"_locs_AD_rouzic2005-2019"),
+          driver="ESRI Shapefile",
+          delete_layer =T)
+ 
+ 
+ loc.clean.interp.rouzic05.19<-interpol_pastecs(data=cleanLocs.rouzic05.19,
+                                           time.int=reso,
+                                           colony=colo_coord_rouzic) 
+
+
+ save(loc.clean.interp.rouzic05.19,
+     file=here::here("data","NewlyCreatedData",paste0("loc_clean_interp",max.gap,"rouzic2005-2019.RData")))
+
+SPDF <-st_as_sf(loc.clean.interp.rouzic05.19,
+         coords = c("long", "lat"), 
+        crs = 4326)
+
+ st_write(SPDF,
+           dsn=here("data","NewlyCreatedData","shapefiles"),
+          layer= paste0("clean_",max.gap,"_locs_AD_rouzic2005-2019"),
+          driver="ESRI Shapefile",
+          delete_layer =T)
+
+
+```
