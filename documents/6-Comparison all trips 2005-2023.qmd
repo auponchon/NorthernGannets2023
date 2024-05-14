@@ -8,42 +8,71 @@ editor: visual
 # 1. Import all processed data
 
 ```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+
 library(here)
 library(tidyverse)
 library(sf)
 library(kableExtra)
+library(readxl)
 library(grid)
 library(gridExtra)
+library(viridis)
 
 source(here::here("R","trip_functions.R"))
 
 load(here::here("data","NewlyCreatedData",
-                "loc_clean_interp2rouzic2005-2019.RData"))
+                "clean_2_locs_AD_rouzic2005-2019.RData"))
 load(here::here("data","NewlyCreatedData",
-                "loc_clean_interp6_rouzic23.RData"))
+                "clean_6_locs_AD_rouzic23.RData"))
 load(here::here("data","NewlyCreatedData",
-                "loc_clean_interp_rouzic2022.RData"))
+                "clean_locs_rouzic_2022.RData"))
 
 
-rouz05.19<-loc.clean.interp.rouzic05.19 %>% 
-    mutate(year=year(datetime)) %>% 
-    dplyr::select(year,id,datetime,long,lat,
-                  distmax,distadj,totalpath,travelNb,trip.id)
+rouz05.19<-cleanLocs.rouzic05.19 %>% 
+    dplyr::select(id,datetime,long,lat,
+                  distmax,distadj,totalpath,difftimemin,travelNb,
+           onlandNb,trip.id) %>% 
+    mutate(year=year(datetime)) 
 
 
-rouz23<-loc.clean.interp.rouzic23 %>% 
-     mutate(year=year(datetime)) %>% 
-    dplyr::select(year,id,datetime,long,lat,
-                  distmax,distadj,totalpath,travelNb,trip.id)
+rouz23<-cleanLocs.rouzic23 %>% 
+    dplyr::select(id,datetime,long,lat,
+                  distmax,distadj,totalpath,difftimemin,travelNb,
+           onlandNb,trip.id) %>% 
+     mutate(year=year(datetime)) 
 
-rouz22<-loc.interp.rouzic %>% 
-     mutate(year=year(datetime)) %>% 
-    dplyr::select(year,id,datetime,long,lat,
-                  distmax,distadj,totalpath,travelNb,trip.id)
+#Identification of trips to exclude (incomplete trips and migration trip)
+incomplete.2022<-c("222267.1","222267.6","222275.1","222276.1",
+              "222279.8","222279.32","222280.45","222269.17","222270.32","222271.25","222272.24","222273.22","222274.25","222275.28","222276.17","222277.10","222278.1","222279.33","222280.46","222281.7")
 
 
-rouz.all<-rbind(rouz05.19,rouz22,rouz23) 
+rouz22<-cleanLocs.rouzic %>% 
+    dplyr::filter(!trip.id %in% incomplete.2022) %>% 
+    dplyr::select(id,datetime,long,lat,
+                  distmax,distadj,totalpath,difftimemin,travelNb,
+           onlandNb,trip.id) %>% 
+     mutate(year=year(datetime)) 
 
+
+rouz.all1<-rbind(rouz05.19,rouz22,rouz23) 
+
+```
+
+# 2- Map of all trips
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+library(rnaturalearth)
+library(ggspatial)
 
 #select borders
 target<-c("France","United Kingdom","Spain","Belgium",
@@ -51,10 +80,11 @@ target<-c("France","United Kingdom","Spain","Belgium",
           "Jersey" ,"Guernsey"  ,"Åland")  
 
 coord_rouzic<-colo_coord_rouzic %>% 
-    sf::st_as_sf(., coords = c("long","lat"))
+    sf::st_as_sf(., coords = c("long","lat"),crs=wgscrs)  
+  
 
 
- indisf<-rouz.all %>%
+ indisf<-rouz.all1 %>%
      mutate(year=factor(as.factor(year),
                         levels=c(2023,2022,2019,2017,2016,2015,2014,
                                  2013,2012, 2011,2010, 2006,2005)) )
@@ -63,10 +93,11 @@ coord_rouzic<-colo_coord_rouzic %>%
  #contours of countries
 shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
     dplyr::filter(name %in% target) 
+    
 
 #coastlines
-coast<-ne_coastline(scale = 10, returnclass = "sf") 
-  
+coast<-ne_coastline(scale = 10, returnclass = "sf")
+
     #create external files
 tiff(here::here("outputs","Clean_trips_2005-2023.png"),
         width=4000,height=3000,res=400,
@@ -81,10 +112,10 @@ tiff(here::here("outputs","Clean_trips_2005-2023.png"),
                  show.legend = T) +
        geom_sf(data=shp,fill="grey90") +
            geom_sf(data = coord_rouzic,
-            shape=23, 
+            shape=23,
             colour="black",
-            fill="yellow", 
-            size=4) + 
+            fill="yellow",
+            size=4) +
         coord_sf(xlim=c(-9,2),
              ylim=c(46.8,52.0),
              expand=F) +
@@ -98,11 +129,475 @@ tiff(here::here("outputs","Clean_trips_2005-2023.png"),
                            which_north = "true",
                            style = ggspatial::north_arrow_nautical(),
                            pad_y = unit(0.8, "cm")) +
-       theme_bw() 
+       theme_bw()
 
 
 print(map)
 
 dev.off()
 
+```
+
+# 3. Trip characteristics 2005-2023
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+
+metadata<-read_excel(here("data","RawData","metadata_2005-2023.xlsx"),
+              sheet="Feuil1",col_names = T) 
+
+rouz.all<-rouz.all1%>% 
+    left_join(.,metadata,by=c("year","id")) %>% 
+    dplyr::mutate(id=as.factor(id),
+                  trip.id=as.factor(trip.id)) %>% 
+    dplyr::arrange(year,id,datetime)
+
+all.trips<- rouz.all %>% 
+    trips_summary_ind(.,
+                      colony=colo_coord_rouzic) %>% 
+     mutate(across(c(id, trip.id, sex ), as.factor)) %>% 
+    mutate(year=year(DateEnd)) %>% 
+    dplyr::filter(travelNb>0)
+
+
+#Table summary
+sum.ids<-all.trips %>% 
+    summarize(Ids=length(unique(id)),
+              Trips=length(unique(trip.id)),
+              Debut=min(DateStart),
+              Fin=max(DateEnd))
+  
+kbl(sum.ids,caption="Sample size for trips") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+sum.id<- all.trips %>% 
+    group_by(id) %>% 
+    summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
+                     ~ mean(.x, na.rm = TRUE))) %>% 
+    as.data.frame()
+
+sum.trips1<- sum.id %>% 
+    summarize(across(where(is.numeric), 
+                     list(Mean=mean,
+                          SE=plotrix::std.error,
+                          Min=min,
+                          Max=max))) %>% 
+    mutate(across(where(is.numeric), round,digits=1))
+
+
+sum.trips<-sum.trips1 %>% 
+           dplyr::mutate(MeanDist=paste(Distmaxkm_Mean,Distmaxkm_SE,sep=" ± "),
+                         DistRange=paste(Distmaxkm_Min,Distmaxkm_Max,sep=" - "),
+                         MeanDur=paste(TripDurh_Mean,TripDurh_SE,sep=" ± "),
+                         DurRange=paste(TripDurh_Min,TripDurh_Max,sep=" - "),     
+                         MeanPath=paste(TotalPathkm_Mean,TotalPathkm_SE,sep=" ± "),
+                      PathRange=paste(TotalPathkm_Min,TotalPathkm_Max,sep=" - ")) %>%
+        dplyr::select(-c(1:12))
+
+# lands.ids<-land %>% 
+#     summarize(Ids=length(unique(id)),
+#               Land=length(unique(onland.id)),
+#               Debut=min(DateEnd),
+#               Fin=max(DateEnd))
+# 
+# kbl(lands.ids,caption="Sample size for periods on land") %>%
+#   kable_styling(bootstrap_options = c("striped", "hover"))
+# 
+# land.id<- land %>%
+#     group_by(id) %>%
+#     summarize(Time= mean(LandDurh, na.rm=T)) %>%
+#     as.data.frame()
+
+# sum.lands<- land.id %>%
+#     summarize(across(where(is.numeric),
+#                      list(mean=mean,
+#                           se=plotrix::std.error))) %>%
+#     mutate(across(where(is.numeric), round,digits=1))
+
+kbl(sum.trips,caption="Summary of trip characteristics",
+    col.names=c("Maximal distance (km)",
+                "Maximal distance (km)",
+                "Trip Duration (h)",
+                "Trip Duration (h)",
+                "Total path (km)",
+                "Total path (km)")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+# kbl(sum.lands,caption="Summary of nest attendance",
+#     col.names=c("DurationMean","DurationSE")) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover"))
+
+
+```
+
+# Comparison between years
+
+```{r}
+mycol2<-magma(n=length(unique(all.trips$year)),begin=0.1,end=0.9)
+
+all.trips<-all.trips %>% 
+    mutate(year=as.factor(all.trips$year),
+           Date=as.numeric(format(DateEnd,format="%j")))
+
+
+#maximal distance
+dist.year<-ggplot(all.trips,aes(x=year,y=Distmaxkm, fill=year,
+                                       colour=year) ) +
+  #  geom_violin(trim=FALSE, alpha=0.2)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  geom_jitter(width=0.2) +
+  scale_y_continuous(limits=c(0,400),breaks=seq(0,400,100),expand=c(0.01,0.01))+
+ labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+  scale_fill_manual(values=mycol2) +
+  scale_colour_manual(values=mycol2)  +
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+print(dist.year)
+
+#trip duration
+dur.year<-ggplot(all.trips,aes(x=year,y=TripDurh, 
+                            fill=year, colour=year) )+
+      geom_violin(trim=FALSE, alpha=0.2)+
+  geom_jitter(width=0.2)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Trip duration (hrs)", x="",tag="b)") +
+  scale_y_continuous(limits=c(0,200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol2) +
+scale_colour_manual(values=mycol2)+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+print(dur.year)
+
+#total distance travelled
+tot.year<-ggplot(all.trips,aes(x=year,y=TotalPathkm, 
+                                      fill=year, colour=year) )+
+      geom_violin(trim=FALSE, alpha=0.2)+
+  geom_jitter(width=0.2)+
+  geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
+  labs(y="Total distance travelled (km)",x="",tag="c)") +
+  scale_y_continuous(limits=c(0,1200),expand=c(0.01,0.01))+
+  scale_fill_manual(values=mycol2, name="Sex") +
+  scale_colour_manual(values=mycol2, name="Sex")+
+  theme(text = element_text(size=10),
+        axis.text = element_text(size=10),
+        legend.text = element_text(size=10),
+        axis.title.x=element_blank())
+print(tot.year)
+
+#nest attendance
+# land<-land %>% 
+#     dplyr::mutate(sero=as.factor(sero))
+# 
+# att.sex<-ggplot(land,aes(x=sex,y=LandDurh,
+#                      fill=sex, colour=sex))+
+#       geom_violin(trim=FALSE, alpha=0.2)+
+#   geom_jitter(width=0.2) +
+#   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE) +
+#   labs(y="Nest attendance (hrs)",x="",tag="d)") +
+#   scale_y_continuous(limits=c(0,60),expand=c(0.01,0.01))+
+#   scale_fill_manual(values=mycol2)  +
+#   scale_colour_manual(values=mycol2)+
+#   theme(legend.position = "none",
+#       text = element_text(size=10),
+#         axis.text = element_text(size=10),
+#         axis.title.x=element_blank())
+
+mylegendsex<-g_legend(tot.sex)
+
+ # tiff("Figures/Figure 2 - Stats trip characteristics.tif",compression="lzw",
+ #      res=600,width=6500,height=3500)
+
+tiff(here("outputs","Trip_characteristics_sex_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(dist.sex+ theme(legend.position="none"),
+                         dur.sex+ theme(legend.position="none"),
+                         tot.sex+ theme(legend.position="none"),
+                         att.sex+ theme(legend.position="none") ,
+                                     ncol=2),
+               mylegendsex, ncol=2,widths=c(1,0.1)) 
+
+    dev.off()  
+```
+
+# Stats 2005-2023 with all data
+
+```{r}
+library(nlme)
+library(emmeans)
+library(DHARMa)
+library(sjPlot)
+
+mycol<-turbo(13)
+
+#1) GLMM on maximal distance to the colony
+
+#get new dataframe for predictions with days and year
+newdatrouz<-expand.grid(day=seq(min(all.trips$Date),
+                                max(all.trips$Date),1),
+                        year=as.factor(unique(all.trips$year)))
+#glme on distance
+glmm.dist.lme.rouz<-lme(log(Distmaxkm) ~ year + Date, 
+                        random=~1 | id , 
+                        data=all.trips)
+
+summary(glmm.dist.lme.rouz)
+
+#check effects
+plot_model(glmm.dist.lme.rouz,sort.est = TRUE,show.values = TRUE)
+ggpredict(glmm.dist.lme.rouz, terms = "year", type="fe")%>% plot()
+
+#estimate predicted values on dates and year
+grouzdatedist <- ref_grid(glmm.dist.lme.rouz, 
+                  cov.keep= c('year',"Date"))
+emmrouzdatedist <- data.frame(emmeans(grouzdatedist, 
+                              spec= c('year',"Date"), 
+                              level= 0.95))
+
+#plot intra-year effect on days according to year
+distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=exp(emmean)), group=year ) +
+     geom_ribbon(data=emmrouzdatedist,aes( x=Date,
+                                 ymin=exp(lower.CL),
+                                 ymax=exp(upper.CL),
+                                 fill=year),
+                            alpha=0.2,colour = NA) +
+  geom_point(data=all.trips, aes(x=Date,y=Distmaxkm,color=year),
+              alpha=0.7,
+              shape=16,
+              show.legend=T) +
+  geom_line(data=emmrouzdatedist,aes(x=Date,y=exp(emmean),color=year),
+             show.legend = F,
+            linewidth=2) +
+  
+  scale_y_continuous(limits=c(0,400),
+                     breaks=seq(0,400,50),
+                     expand=c(0.01,0.01))+
+    scale_x_continuous(limits=c(150,300),
+                       breaks=seq(150,300,25),
+                       expand=c(0.001,0.001))+
+  labs(y="Predicted maximal distance (km)",tag="a)",x="") +
+  scale_colour_manual(values=mycol) +
+  scale_fill_manual(values=mycol) +
+  theme_light() +
+  theme(#legend.position="none",
+        panel.grid.minor = element_blank()) 
+
+print(distdate)
+
+#estimate predicted values on year only to check inter-annual variability
+grouzyeardist <- ref_grid(glmm.dist.lme.rouz, 
+                  cov.keep= c('year'))
+emmrouzyeardist <- data.frame(emmeans(grouzyeardist, 
+                              spec= c('year'), 
+                              level= 0.95))
+
+#plot intra-year effect on years only
+distyear<-ggplot(data=emmrouzyeardist,aes(x=year,y=exp(emmean)), group=year ) +
+  # geom_point(data=all.trips, aes(x=year,y=Distmaxkm,color=year),
+  #             alpha=0.4,
+  #             shape=16,
+  #             show.legend=T) +
+     geom_errorbar(data=emmrouzyeardist,aes(x=year,
+                                 ymin=exp(lower.CL),
+                                 ymax=exp(upper.CL),
+                                 colour=year),
+                                 width = 0.15) +
+  geom_point(data=emmrouzyeardist,aes(x=year,y=exp(emmean),color=year),
+             show.legend = F,
+             size=2,
+             shape=15) +
+  scale_y_continuous(limits=c(0,400),
+                     breaks=seq(0,400,50),
+                     expand=c(0.1,0.1))+
+    scale_x_discrete(expand=c(0.001,0.001))+
+  labs(y="Predicted maximal distance (km)",tag="a)",x="") +
+  scale_colour_manual(values=mycol) +
+ # scale_fill_manual(values=mycol) +
+  theme_light() +
+  theme(#legend.position="none",
+        panel.grid.minor = element_blank()) 
+
+print(distyear)
+
+#2) GLMM on trip duration
+
+#glme on duration
+glmm.dur.lme.rouz<-lme(log(TripDurh) ~ year + Date, 
+                        random=~1 | id , 
+                        data=all.trips)
+
+plot(glmm.dur.lme.rouz)
+
+#check effects
+plot_model(glmm.dur.lme.rouz,sort.est = TRUE,show.values = TRUE)
+ggpredict(glmm.dur.lme.rouz, terms = "year", type="fe")%>% plot()
+
+#estimate predicted values on dates and year
+grouzdatedur <- ref_grid(glmm.dur.lme.rouz, 
+                  cov.keep= c('year',"Date"))
+emmrouzdatedur <- data.frame(emmeans(grouzdatedur, 
+                              spec= c('year',"Date"), 
+                              level= 0.95))
+
+#plot intra-year effect on days according to year
+durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=exp(emmean)), group=year ) +
+     geom_ribbon(data=emmrouzdatedur,aes( x=Date,
+                                 ymin=exp(lower.CL),
+                                 ymax=exp(upper.CL),
+                                 fill=year),
+                            alpha=0.2,colour = NA) +
+  geom_point(data=all.trips, aes(x=Date,y=TripDurh,color=year),
+              alpha=0.7,
+              shape=16,
+              show.legend=T) +
+  geom_line(data=emmrouzdatedur,aes(x=Date,y=exp(emmean),color=year),
+             show.legend = F,
+            linewidth=2) +
+  
+  scale_y_continuous(limits=c(0,300),
+                     breaks=seq(0,300,50),
+                     expand=c(0.01,0.01))+
+    scale_x_continuous(limits=c(150,300),
+                       breaks=seq(150,300,25),
+                       expand=c(0.001,0.001))+
+  labs(y="Predicted trip duration (h)",tag="b)",x="") +
+  scale_colour_manual(values=mycol) +
+  scale_fill_manual(values=mycol) +
+  theme_light() +
+  theme(#legend.position="none",
+        panel.grid.minor = element_blank()) 
+
+print(durdate)
+
+#estimate predicted values on year only to check inter-annual variability
+grouzyear <- ref_grid(glmm.dur.lme.rouz, 
+                  cov.keep= c('year'))
+emmrouzyear <- data.frame(emmeans(grouzyear, 
+                              spec= c('year'), 
+                              level= 0.95))
+
+#plot intra-year effect on years only
+duryear<-ggplot(data=emmrouzyear,aes(x=year,y=exp(emmean)), group=year ) +
+  # geom_point(data=all.trips, aes(x=year,y=Distmaxkm,color=year),
+  #             alpha=0.4,
+  #             shape=16,
+  #             show.legend=T) +
+     geom_errorbar(data=emmrouzyear,aes(x=year,
+                                 ymin=exp(lower.CL),
+                                 ymax=exp(upper.CL),
+                                 colour=year),
+                                 width = 0.15) +
+  geom_point(data=emmrouzyear,aes(x=year,y=exp(emmean),color=year),
+             show.legend = F,
+             size=2,
+             shape=15) +
+  scale_y_continuous(limits=c(0,100),
+                     breaks=seq(0,100,20),
+                     expand=c(0.01,0.01))+
+    scale_x_discrete(expand=c(0.01,0.01))+
+  labs(y="Predicted trip duration (h)",tag="b)",x="") +
+  scale_colour_manual(values=mycol) +
+ # scale_fill_manual(values=mycol) +
+  theme_light() +
+  theme(#legend.position="none",
+        panel.grid.minor = element_blank()) 
+
+print(duryear)
+
+#3) GLMM on total distance
+
+#glme on duration
+glmm.tot.lme.rouz<-lme(log(TotalPathkm) ~ year + Date, 
+                        random=~1 | id , 
+                        data=all.trips)
+
+plot(glmm.tot.lme.rouz)
+
+#check effects
+plot_model(glmm.tot.lme.rouz,sort.est = TRUE,show.values = TRUE)
+ggpredict(glmm.tot.lme.rouz, terms = "year", type="fe")%>% plot()
+
+#estimate predicted values on dates and year
+grouzdatetotpath <- ref_grid(glmm.tot.lme.rouz, 
+                  cov.keep= c('year',"Date"))
+emmrouzdatetotpath <- data.frame(emmeans(grouzdatetotpath, 
+                              spec= c('year',"Date"), 
+                              level= 0.95))
+
+#plot intra-year effect on days according to year
+totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean)), 
+                    group=year ) +
+     geom_ribbon(data=emmrouzdatetotpath,aes( x=Date,
+                                 ymin=exp(lower.CL),
+                                 ymax=exp(upper.CL),
+                                 fill=year),
+                            alpha=0.2,colour = NA) +
+  geom_point(data=all.trips, aes(x=Date,y=TotalPathkm,color=year),
+              alpha=0.7,
+              shape=16,
+              show.legend=T) +
+  geom_line(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean),color=year),
+             show.legend = F,
+            linewidth=2) +
+  
+  scale_y_continuous(limits=c(0,1400),
+                     breaks=seq(0,1400,200),
+                     expand=c(0.01,0.01))+
+    scale_x_continuous(limits=c(150,300),
+                       breaks=seq(150,300,25),
+                       expand=c(0.001,0.001))+
+  labs(y="Predicted total distance per trip (km)",tag="c)",x="") +
+  scale_colour_manual(values=mycol) +
+  scale_fill_manual(values=mycol) +
+  theme_light() +
+  theme(#legend.position="none",
+        panel.grid.minor = element_blank()) 
+
+print(totpathdate)
+
+#estimate predicted values on year only to check inter-annual variability
+grouzyeartot <- ref_grid(glmm.tot.lme.rouz, 
+                  cov.keep= c('year'))
+emmrouzyeartot <- data.frame(emmeans(grouzyeartot, 
+                              spec= c('year'), 
+                              level= 0.95))
+
+#plot intra-year effect on years only
+totyear<-ggplot(data=emmrouzyeartot,aes(x=year,y=exp(emmean)), group=year ) +
+  # geom_point(data=all.trips, aes(x=year,y=Distmaxkm,color=year),
+  #             alpha=0.4,
+  #             shape=16,
+  #             show.legend=T) +
+     geom_errorbar(data=emmrouzyeartot,aes(x=year,
+                                 ymin=exp(lower.CL),
+                                 ymax=exp(upper.CL),
+                                 colour=year),
+                                 width = 0.15) +
+  geom_point(data=emmrouzyeartot,aes(x=year,y=exp(emmean),color=year),
+             show.legend = F,
+             size=2,
+             shape=15) +
+  scale_y_continuous(limits=c(0,1200),
+                     breaks=seq(0,1200,200),
+                     expand=c(0.01,0.01))+
+    scale_x_discrete(expand=c(0.01,0.01))+
+  labs(y="Predicted total distance per trip (km)",tag="c)",x="") +
+  scale_colour_manual(values=mycol) +
+ # scale_fill_manual(values=mycol) +
+  theme_light() +
+  theme(#legend.position="none",
+        panel.grid.minor = element_blank()) 
+
+print(totyear)
 ```

@@ -70,13 +70,13 @@ all_rouzic<-move.rouzic@data %>%
                   timestamp,
                   location_long,
                   location_lat,
-                  barometric_height, 
+                  height_above_msl, 
                   ground_speed) %>% 
     rename(id=tag_local_identifier,
            datetime=timestamp,
            long=location_long,
            lat=location_lat,
-           alt=barometric_height,
+           alt=height_above_msl,
            speed=ground_speed)  %>% 
     arrange(id,datetime) %>% 
     mutate(id=as.factor(id),

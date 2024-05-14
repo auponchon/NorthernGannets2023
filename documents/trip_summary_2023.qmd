@@ -184,7 +184,7 @@ kbl(summy.ad,caption="Résumé des trajets bruts adultes",
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 
-kbl(summy.trips.ad,caption="Détail des trajets bruts individuels adultes", 
+kbl(summy.trips.ad.all,caption="Détail des trajets bruts individuels adultes", 
     digits=1,
     col.names=c("ID","Nb locs","Nb trajets","Date début",
                 "Date fin","Sexe","Sero","Durée ± SE (jours)","Min-max durée (jours)",
