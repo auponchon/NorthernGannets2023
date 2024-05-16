@@ -61,6 +61,27 @@ rouz22<-cleanLocs.rouzic %>%
 
 rouz.all1<-rbind(rouz05.19,rouz22,rouz23) 
 
+
+metadata<-read_excel(here("data","RawData","metadata_2005-2023.xlsx"),
+              sheet="Feuil1",col_names = T) 
+
+rouz.all<-rouz.all1%>% 
+    left_join(.,metadata,by=c("year","id")) %>% 
+    dplyr::mutate(id=as.factor(id),
+                  trip.id=as.factor(trip.id),
+                  sero=as.factor(sero)) %>% 
+    dplyr::arrange(year,id,datetime)
+
+
+all.trips<- rouz.all %>% 
+    trips_summary_ind(.,
+                      colony=colo_coord_rouzic) %>% 
+     mutate(across(c(id, trip.id, sex ), as.factor)) %>% 
+    mutate(year=year(DateEnd)) %>% 
+    dplyr::filter(travelNb>0) %>% 
+     mutate(year=as.factor(year),
+           Date=as.numeric(format(DateEnd,format="%j")))
+
 ```
 
 # 2- Map of all trips
@@ -74,6 +95,7 @@ rouz.all1<-rbind(rouz05.19,rouz22,rouz23)
 library(rnaturalearth)
 library(ggspatial)
 
+
 #select borders
 target<-c("France","United Kingdom","Spain","Belgium",
           "Netherlands", "Germany","Ireland","Isle of Man",
@@ -83,8 +105,11 @@ coord_rouzic<-colo_coord_rouzic %>%
     sf::st_as_sf(., coords = c("long","lat"),crs=wgscrs)  
   
 
+indi23<-rouz.all %>% 
+    dplyr::filter(year==2023)
 
- indisf<-rouz.all1 %>%
+
+ indisf.all<-rouz.all1 %>%
      mutate(year=factor(as.factor(year),
                         levels=c(2023,2022,2019,2017,2016,2015,2014,
                                  2013,2012, 2011,2010, 2006,2005)) )
@@ -98,18 +123,48 @@ shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
 #coastlines
 coast<-ne_coastline(scale = 10, returnclass = "sf")
 
-    #create external files
-tiff(here::here("outputs","Clean_trips_2005-2023.png"),
-        width=4000,height=3000,res=400,
-     compression="lzw")
+colinfect<-viridis(n=2,begin=0,end=0.6,option="D")
 
-   #Map of all locations for 1 ind
-   map<-ggplot()+
+ #Map of all locations for all years
+   map.year23<-ggplot()+
+            geom_path(data = indi23,
+            aes(x=long,y=lat,
+                group=year,
+                color=sero),
+                 show.legend = T,
+            alpha=0.4) +
+       geom_sf(data=shp,fill="grey90") +
+           geom_sf(data = coord_rouzic,
+            shape=23,
+            colour="black",
+            fill="yellow",
+            size=4) +
+        coord_sf(xlim=c(-9,2),
+             ylim=c(46.8,52.0),
+             expand=F) +
+   scale_colour_manual(values=colinfect,  name="Eye") +
+       labs(x="",y="") +
+     annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+       theme_bw()
+
+   print(map.year23)
+   
+
+ #Map of all locations for all years
+   map.allyears<-ggplot()+
             geom_path(data = indisf,
             aes(x=long,y=lat,
                 group=year,
                 color=year),
-                 show.legend = T) +
+                 show.legend = T,
+            alpha=0.4) +
        geom_sf(data=shp,fill="grey90") +
            geom_sf(data = coord_rouzic,
             shape=23,
@@ -131,8 +186,16 @@ tiff(here::here("outputs","Clean_trips_2005-2023.png"),
                            pad_y = unit(0.8, "cm")) +
        theme_bw()
 
+   
+   
+    #create external files
+tiff(here::here("outputs","Clean_trips_2005-2023.png"),
+        width=4000,height=3000,res=400,
+     compression="lzw")
 
-print(map)
+  
+
+print(map.allyears)
 
 dev.off()
 
@@ -145,23 +208,6 @@ dev.off()
 #| include: true
 #| warning: false
 #| message: false
-
-
-metadata<-read_excel(here("data","RawData","metadata_2005-2023.xlsx"),
-              sheet="Feuil1",col_names = T) 
-
-rouz.all<-rouz.all1%>% 
-    left_join(.,metadata,by=c("year","id")) %>% 
-    dplyr::mutate(id=as.factor(id),
-                  trip.id=as.factor(trip.id)) %>% 
-    dplyr::arrange(year,id,datetime)
-
-all.trips<- rouz.all %>% 
-    trips_summary_ind(.,
-                      colony=colo_coord_rouzic) %>% 
-     mutate(across(c(id, trip.id, sex ), as.factor)) %>% 
-    mutate(year=year(DateEnd)) %>% 
-    dplyr::filter(travelNb>0)
 
 
 #Table summary
@@ -240,11 +286,6 @@ kbl(sum.trips,caption="Summary of trip characteristics",
 ```{r}
 mycol2<-magma(n=length(unique(all.trips$year)),begin=0.1,end=0.9)
 
-all.trips<-all.trips %>% 
-    mutate(year=as.factor(all.trips$year),
-           Date=as.numeric(format(DateEnd,format="%j")))
-
-
 #maximal distance
 dist.year<-ggplot(all.trips,aes(x=year,y=Distmaxkm, fill=year,
                                        colour=year) ) +
@@ -311,21 +352,21 @@ print(tot.year)
 #         axis.text = element_text(size=10),
 #         axis.title.x=element_blank())
 
-mylegendsex<-g_legend(tot.sex)
+mylegendyear<-g_legend(tot.year)
 
  # tiff("Figures/Figure 2 - Stats trip characteristics.tif",compression="lzw",
  #      res=600,width=6500,height=3500)
 
-tiff(here("outputs","Trip_characteristics_sex_2023.tif"),
+tiff(here("outputs","Trip_characteristics_2005_2023.tif"),
      width=7000,
      height=4000,
      res=600,
      compression="lzw")
-grid.arrange(arrangeGrob(dist.sex+ theme(legend.position="none"),
-                         dur.sex+ theme(legend.position="none"),
-                         tot.sex+ theme(legend.position="none"),
-                         att.sex+ theme(legend.position="none") ,
-                                     ncol=2),
+grid.arrange(arrangeGrob(dist.year+ theme(legend.position="none"),
+                         dur.year+ theme(legend.position="none"),
+                         tot.year+ theme(legend.position="none"),
+                 #        att.sex+ theme(legend.position="none") ,
+                                     ncol=3),
                mylegendsex, ncol=2,widths=c(1,0.1)) 
 
     dev.off()  
@@ -338,6 +379,7 @@ library(nlme)
 library(emmeans)
 library(DHARMa)
 library(sjPlot)
+library(ggeffects)
 
 mycol<-turbo(13)
 
@@ -421,7 +463,7 @@ distyear<-ggplot(data=emmrouzyeardist,aes(x=year,y=exp(emmean)), group=year ) +
                      breaks=seq(0,400,50),
                      expand=c(0.1,0.1))+
     scale_x_discrete(expand=c(0.001,0.001))+
-  labs(y="Predicted maximal distance (km)",tag="a)",x="") +
+  labs(y="Maximal distance (km)",tag="a)",x="") +
   scale_colour_manual(values=mycol) +
  # scale_fill_manual(values=mycol) +
   theme_light() +
@@ -465,8 +507,8 @@ durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=exp(emmean)), group=year ) +
              show.legend = F,
             linewidth=2) +
   
-  scale_y_continuous(limits=c(0,300),
-                     breaks=seq(0,300,50),
+  scale_y_continuous(limits=c(0,200),
+                     breaks=seq(0,200,50),
                      expand=c(0.01,0.01))+
     scale_x_continuous(limits=c(150,300),
                        breaks=seq(150,300,25),
@@ -506,7 +548,7 @@ duryear<-ggplot(data=emmrouzyear,aes(x=year,y=exp(emmean)), group=year ) +
                      breaks=seq(0,100,20),
                      expand=c(0.01,0.01))+
     scale_x_discrete(expand=c(0.01,0.01))+
-  labs(y="Predicted trip duration (h)",tag="b)",x="") +
+  labs(y="Trip duration (h)",tag="b)",x="") +
   scale_colour_manual(values=mycol) +
  # scale_fill_manual(values=mycol) +
   theme_light() +
@@ -557,7 +599,7 @@ totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean)),
     scale_x_continuous(limits=c(150,300),
                        breaks=seq(150,300,25),
                        expand=c(0.001,0.001))+
-  labs(y="Predicted total distance per trip (km)",tag="c)",x="") +
+  labs(y="Total distance per trip (km)",tag="c)",x="") +
   scale_colour_manual(values=mycol) +
   scale_fill_manual(values=mycol) +
   theme_light() +
@@ -600,4 +642,78 @@ totyear<-ggplot(data=emmrouzyeartot,aes(x=year,y=exp(emmean)), group=year ) +
         panel.grid.minor = element_blank()) 
 
 print(totyear)
+
+mylegendyear<-g_legend(totyear)
+
+
+grid.arrange(arrangeGrob(distdate+theme(legend.position="none"),
+             durdate+theme(legend.position="none"),
+             totpathdate+theme(legend.position="none"),
+             ncol=3),
+             mylegendyear, ncol=2,widths=c(1,0.1)) 
+```
+
+# Test sex
+
+```{r}
+
+trips.sex<-all.trips %>% 
+    dplyr::filter(!is.na(sex) & year!="2013") %>% 
+    droplevels() 
+    
+table(trips.sex[,c("year","sex")])
+
+newdatrouz<-expand.grid(day=seq(min(trips.sex$Date),
+                                max(trips.sex$Date),1),
+                        year=as.factor(unique(trips.sex$year)),
+                        sex=as.factor(unique(trips.sex$sex)))
+#glme on distance
+glmm.dist.sex<-lme(log(Distmaxkm) ~ year+sex + Date, 
+                        random=~1 | id , 
+                        data=trips.sex)
+
+summary(glmm.dist.sex)
+
+#check effects
+plot_model(glmm.dist.sex,sort.est = TRUE,show.values = TRUE)
+ggpredict(glmm.dist.sex, terms = "sex", type="fe")%>% plot()
+
+#glme on duration
+glmm.dur.sex<-lme(log(TripDurh) ~ Date + sex +year, 
+                        random=~1 | id , 
+                        data=trips.sex)
+
+summary(glmm.dur.sex)
+
+#check effects
+plot_model(glmm.dur.sex, sort.est = TRUE,show.values = TRUE)
+ggpredict(glmm.dur.sex, terms = "sex", type="fe")%>% plot()
+
+
+#glme on duration
+glmm.totpath.sex<-lme(log(TotalPathkm) ~ year + sex + Date, 
+                        random=~1 | id , 
+                        data=trips.sex)
+
+summary(glmm.totpath.sex)
+
+#check effects
+plot_model(glmm.totpath.sex, sort.est = TRUE,show.values = TRUE)
+ggpredict(glmm.totpath.sex, terms = "sex", type="fe")%>% plot()
+
+
+
+trips.cond<-all.trips %>% 
+    left_join(., metadata, by=c("id","sex","stage","deploy"),keep=F)  %>% 
+    dplyr::filter(!is.na(weight) & 
+                      !is.na(Tarsus)&
+                      !is.na(Wing)&
+                      !is.na(Bill.Length)) %>% 
+                      droplevels()
+
+
+
+
+
+
 ```

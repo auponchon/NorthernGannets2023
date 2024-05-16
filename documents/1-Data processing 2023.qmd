@@ -90,33 +90,7 @@ all_rouzic<-move.rouzic@data %>%
 Individual data (sex, date of equipment, breeding stage, period, serological status etc...) are stored in a separate file
 
 ```{r}
-serol.rouzic<-read_excel(here("data","RawData","data_Rouzic_2023_sexage_AIV.xlsx"),
-              sheet="capture_data",col_names = T) %>% 
-      dplyr::select(GSM,
-                    stage,
-                    date,
-                    sexe,
-                    age_chick,
-                    AIV,
-                    body_weight,
-                    tarsus,
-                    wing,
-                    culmen) %>% 
-       rename(id=GSM, 
-              sex=sexe,
-              sero=AIV,
-              period=date) %>% 
-       mutate(id=as.factor(id),
-              stage=as.factor(stage),
-              sex=as.factor(sex),
-              period=as.Date(period,format="%F"),
-              deploy=ifelse(period < as.Date("2023-08-01",
-                                        format="%F"),
-                            1,
-                            2))  %>% 
-     dplyr::filter(id!="." & id!="233661.1") %>% 
-    droplevels()
-    
+serol.rouzic<-get_serol_data_2023()
 ```
 
 # 3- Classifying individual at-sea trips
@@ -350,7 +324,7 @@ grid.arrange(dist,dur,correl, land, ncol=2, nrow=2,
 
 ```{r}
 
-max.gap<-3
+max.gap<-10
 
 clean.trip.ad.nb23<-raw_trips_rouzic23 %>%
      dplyr::filter(TripDurh > dur.thres & 

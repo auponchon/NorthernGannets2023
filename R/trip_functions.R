@@ -353,6 +353,41 @@ g_legend<-function(a.gplot){
     return(legend)}
 
     
-    
+######################################################################################
+## Function to import serological data for 2023
+######################################################################################
+
+get_serol_data_2023<-function(){
+serol.rouzic<-read_excel(here("data","RawData","data_Rouzic_2023_sexage_AIV.xlsx"),
+                         sheet="capture_data",col_names = T) %>% 
+    dplyr::select(GSM,
+                  stage,
+                  date,
+                  sexe,
+                  age_chick,
+                  AIV,
+                  body_weight,
+                  tarsus,
+                  wing,
+                  culmen) %>% 
+    rename(id=GSM, 
+           sex=sexe,
+           sero=AIV,
+           period=date) %>% 
+    mutate(id=as.factor(id),
+           stage=as.factor(stage),
+           sex=as.factor(sex),
+           sero=as.factor(sero),
+           culmen=as.numeric(culmen),
+           period=as.Date(period,format="%F"),
+           deploy=ifelse(period < as.Date("2023-08-01",
+                                          format="%F"),
+                         1,
+                         2))  %>% 
+    dplyr::filter(id!="." & id!="233661.1") %>% 
+    droplevels()
+
+return(serol.rouzic)
+}
 
 

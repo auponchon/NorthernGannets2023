@@ -41,6 +41,62 @@ land<-raw_rouzic_2023 %>%
                       stage=="adult") %>% 
      dplyr::mutate(sero=as.factor(sero))
 
+
+library(FactoMineR)
+library(corrr)
+library(corrplot)
+library(factoextra)
+library(readxl)
+library(ggcorrplot)
+
+
+serol.rouzic<-get_serol_data_2023()   
+             
+#summary of all trips (26 adults)
+trips<-trips6 %>% 
+       mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
+       droplevels() %>% 
+              left_join(., serol.rouzic, by=c("id","sex","sero",
+                                              "deploy","stage"),keep=F)
+
+
+lands<-land %>% 
+      mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
+      droplevels() %>% 
+      left_join(., serol.rouzic, by=c("id","sex","sero","deploy","stage"),keep=F)
+
+#get the 4 numerical variables which are used as proxies of body condition 
+mat<-trips %>% 
+    dplyr::distinct(id,body_weight,wing, culmen,tarsus, .keep_all = F) %>% 
+    dplyr::select(-id) %>% 
+    scale(.)
+
+#check correlation between variables
+corr_matrix <- cor(mat)
+corrplot(corr_matrix, method="number")
+
+#pca
+data.pca <- princomp(mat)
+summary(data.pca)
+fviz_pca_var(data.pca, col.var = "cos2",
+            gradient.cols = c("black", "orange", "green"),
+            repel = TRUE)
+
+#extract pca results
+cond<-get_pca_ind(data.pca)
+
+#extract the axis 1 values
+IDS<-trips %>% 
+      dplyr::distinct(id,body_weight,wing, culmen, .keep_all = F) %>% 
+    dplyr::mutate(body_cond=cond$coord[,1])
+
+#merge body condition index with rest of data
+trips.cond<-trips %>% 
+    left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
+lands.cond<-lands %>% 
+    left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
+
+
 #Table summary
 sum.ids<-trips6 %>% 
     summarize(Ids=length(unique(id)),
@@ -989,3 +1045,192 @@ dev.off()
 ```
 
 Différence entre mâles et femelles pour les trajets en mer mais pas pour l'attendance au nid. Pas d'intéraction avec le statut sérologique.
+
+# Full model with body condition
+
+```{r}
+
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+source(here::here("R","stats_functions.R"))
+var<-c('day','sex','sero')
+
+
+#daysx<-c("03/07","20/08","30/08","09/09","19/09","29/09","20/10")
+newdat<-expand.grid(site=unique(trips.cond$site),
+                    day=seq(min(trips.cond$day),
+                            max(trips.cond$day),1),
+                    sero=unique(trips.cond$sero),
+                    sex=unique(trips$sex),
+                    body_cond=seq(-2.1,3.3,0.05))
+
+newdatland<-expand.grid(site=unique(lands.cond$site),
+                     day=seq(min(lands.cond$day),
+                            max(lands.cond$day),1),
+                    sero=unique(lands.cond$sero),
+                    sex=unique(lands.cond$sex),
+                    body_cond=seq(-2.1,3.3,0.05))
+
+glm.dist<-lme(sqrt(Distmaxkm)~ day + sex*sero*body_cond +deploy,
+              random= ~1| id,
+              data=trips.cond)
+
+summary(glm.dist)
+anova(glm.dist)
+
+qqnorm(resid(glm.dist))
+qqline(resid(glm.dist))
+
+
+glm.dur<-lme(sqrt(TripDurh)~ day + sex*sero*body_cond+deploy ,
+              random= ~1| id,
+              data=trips.cond)
+
+summary(glm.dur)
+
+glm.dur1<-drop1(glm.dur)
+anova(glm.dur)
+
+qqnorm(resid(glm.dur))
+qqline(resid(glm.dur))
+
+
+glm.path<-lme(sqrt(TotalPathkm)~ day + sex*sero*body_cond+deploy ,
+              random= ~1| id,
+              data=trips.cond)
+
+summary(glm.path)
+anova(glm.path)
+
+qqnorm(resid(glm.path))
+qqline(resid(glm.path))
+
+##stats for time on land
+glm<-lme(sqrt(LandDurh)~ day + sex*sero*body_cond+deploy ,
+              random= ~1| id,
+              data=lands.cond)
+
+summary(glm.land)
+anova(glm.land)
+
+qqnorm(resid(glm.land))
+qqline(resid(glm.land))
+
+
+#predict fitted values and CI
+
+predist<-predict_lme_results(glm.dist,newdat,var)
+preddur<-predict_lme_results(glm.dur,newdat,var)
+predpath<-predict_lme_results(glm.path,newdat,var)
+
+predland<-predict_lme_results(glm.land,newdatland,var)
+
+
+
+distlmmsex<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=sex)) + 
+    geom_ribbon(data= data.frame(predist),
+            aes(ymin= lower.CL^2, ymax= upper.CL^2,
+                y= NULL,
+                fill=sex),
+           alpha=0.4,colour = NA) +
+geom_point(alpha=0.6) +
+ geom_line(data=predist,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+    scale_x_continuous(limits=c(0,120),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001)) +
+     scale_y_continuous(limits=c(0,400,100),
+                        breaks=seq(0,400,100),
+                        expand=c(0.001,0.001)) + 
+ scale_colour_manual(values=mycol2,name="Sex") +
+ scale_fill_manual(values=mycol2,name="Sex")  +
+     theme_light()+
+    theme(#legend.position="none",
+          panel.grid.minor = element_blank()) 
+
+durlmmsex<-ggplot(trips, aes(x=day, y=TripDurh ,colour=sex)) + 
+    geom_ribbon(data= data.frame(preddur), 
+            aes(ymin= lower.CL^2, ymax= upper.CL^2, 
+                y= NULL,
+                fill=sex), 
+            alpha=0.4,colour = NA) +
+geom_point(alpha=0.6) +
+ geom_line(data=preddur,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Trip Duration (h)",tag="b)",x="") +
+    scale_x_continuous(limits=c(0,120),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001)) +
+    scale_y_continuous(limits=c(0,200),
+                       breaks=seq(0,200,50),
+                       expand=c(0.001,0)) +
+  scale_colour_manual(values=mycol2,name="Sex") +
+    scale_fill_manual(values=mycol2,name="Sex")  +
+    theme_light()+
+    theme(#legend.position="none",
+          panel.grid.minor = element_blank()) 
+    
+
+pathlmmsex<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=sex)) + 
+    geom_ribbon(data= data.frame(predpath), 
+            aes(ymin= lower.CL^2, ymax= upper.CL^2, 
+                y= NULL,
+                fill=sex), 
+            alpha=0.4,colour = NA) +
+geom_point(alpha=0.6) +
+ geom_line(data=predpath,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Total distance travelled (km)",tag="c)",x="") +
+    scale_x_continuous(limits=c(0,120),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001)) +
+    scale_y_continuous(limits=c(0,1200),
+                       breaks=seq(0,1200,300),
+                       expand=c(0.001,0)) +
+  scale_colour_manual(values=mycol2,name="Sex") +
+    scale_fill_manual(values=mycol2,name="Sex")  +
+    theme_light()+
+    theme(#legend.position="none",
+          panel.grid.minor = element_blank()) 
+    
+
+landlmmsex<-ggplot(lands, aes(x=day, y=LandDurh ,colour=sex)) + 
+    geom_ribbon(data= data.frame(predland), 
+            aes(ymin= lower.CL^2, ymax= upper.CL^2, 
+                y= NULL,
+                fill=sex), 
+            alpha=0.4,colour = NA) +
+geom_point(alpha=0.6) +
+ geom_line(data=predland,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Time in colony (h)",tag="d)",x="") +
+    scale_x_continuous(limits=c(0,120),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001)) +
+    scale_y_continuous(limits=c(0,60),
+                       breaks=seq(0,60,15),
+                       expand=c(0.001,0)) +
+  scale_colour_manual(values=mycol2,name="Sex") +
+    scale_fill_manual(values=mycol2,name="Sex")  +
+    theme_light()+
+    theme(panel.grid.minor = element_blank()) 
+    
+mylegendsex<-g_legend(pathlmmsex)
+
+tiff(here("outputs","LMM_predictions_sex_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(distlmmsex+ theme(legend.position="none"),
+                         durlmmsex+ theme(legend.position="none"),
+                         pathlmmsex+ theme(legend.position="none"),
+                         landlmmsex+ theme(legend.position="none") ,
+                                     ncol=2),
+               mylegendsex, ncol=2,widths=c(1,0.1)) 
+dev.off()
+```
