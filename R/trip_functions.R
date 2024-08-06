@@ -107,7 +107,7 @@ trips_summary_ind<-function (dataset,colony){
     
     for (k in 1:length(nb.trip)){
         if (nb.trip[k]!=0){
-        temp<-subset(dataset,dataset$trip.id==nb.trip[k])
+        temp<-subset(dataset,dataset$trip.id==nb.trip[k]) 
                 maxi<-data.frame(id=temp$id[1],
                                  travelNb=temp$travelNb[1],
                                  trip.id=temp$trip.id[1],
