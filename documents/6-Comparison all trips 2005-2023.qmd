@@ -125,7 +125,9 @@ coast<-ne_coastline(scale = 10, returnclass = "sf")
 
 colinfect<-viridis(n=2,begin=0,end=0.6,option="D")
 
- #Map of all locations for all years
+colinfect
+
+ #Map of all locations for 2023
    map.year23<-ggplot()+
             geom_path(data = indi23,
             aes(x=long,y=lat,
@@ -159,7 +161,7 @@ colinfect<-viridis(n=2,begin=0,end=0.6,option="D")
 
  #Map of all locations for all years
    map.allyears<-ggplot()+
-            geom_path(data = indisf,
+            geom_path(data = indisf.all,
             aes(x=long,y=lat,
                 group=year,
                 color=year),
@@ -305,7 +307,7 @@ print(dist.year)
 #trip duration
 dur.year<-ggplot(all.trips,aes(x=year,y=TripDurh, 
                             fill=year, colour=year) )+
-      geom_violin(trim=FALSE, alpha=0.2)+
+ #     geom_violin(trim=FALSE, alpha=0.2)+
   geom_jitter(width=0.2)+
   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
   labs(y="Trip duration (hrs)", x="",tag="b)") +
@@ -321,13 +323,13 @@ print(dur.year)
 #total distance travelled
 tot.year<-ggplot(all.trips,aes(x=year,y=TotalPathkm, 
                                       fill=year, colour=year) )+
-      geom_violin(trim=FALSE, alpha=0.2)+
+#      geom_violin(trim=FALSE, alpha=0.2)+
   geom_jitter(width=0.2)+
   geom_boxplot(outlier.alpha = 0, alpha=0.3, show.legend = FALSE)+
   labs(y="Total distance travelled (km)",x="",tag="c)") +
   scale_y_continuous(limits=c(0,1200),expand=c(0.01,0.01))+
-  scale_fill_manual(values=mycol2, name="Sex") +
-  scale_colour_manual(values=mycol2, name="Sex")+
+  scale_fill_manual(values=mycol2, name="Year") +
+  scale_colour_manual(values=mycol2, name="Year")+
   theme(text = element_text(size=10),
         axis.text = element_text(size=10),
         legend.text = element_text(size=10),
@@ -367,7 +369,7 @@ grid.arrange(arrangeGrob(dist.year+ theme(legend.position="none"),
                          tot.year+ theme(legend.position="none"),
                  #        att.sex+ theme(legend.position="none") ,
                                      ncol=3),
-               mylegendsex, ncol=2,widths=c(1,0.1)) 
+               mylegendyear, ncol=2,widths=c(1,0.1)) 
 
     dev.off()  
 ```

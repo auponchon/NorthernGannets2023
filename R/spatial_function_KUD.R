@@ -2,12 +2,12 @@
 
 
 #reduce dataset with id, sex, datetime, long and lat
-get_df_sexed<-function(data,sex,SEX){
-    sexo<-enquo(sex) 
+get_df_filtered<-function(data,var,var.select){
+    VAR<-enquo(var) 
     
 df<-data %>% 
-    dplyr::filter(UQ(sexo)==SEX) %>% 
-    dplyr::select(id,sex,datetime,long,lat) %>% 
+    dplyr::filter(UQ(VAR)==var.select) %>% 
+    dplyr::select(id,UQ(VAR),datetime,long,lat) %>% 
     droplevels()
 return(df)
 }
