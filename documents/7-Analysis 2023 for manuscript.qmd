@@ -461,6 +461,7 @@ ind.var<-cleanLocs.rouzic23 %>%
     group_by(id,year) %>% 
     slice(1) %>% 
     dplyr::filter(year==2023) %>% 
+    droplevels() %>% 
     ungroup()
 
 #get interpolated data from HMM
@@ -478,12 +479,13 @@ interp.23<- read_delim(here::here("data","RawData",
     dplyr::mutate(id=as.factor(str_sub(indID,-6,-1))) %>% 
     left_join(.,ind.var,by=c("id","year")) %>% 
     dplyr::filter(year==2023) %>% 
+    droplevels() %>% 
     as.data.frame(.) 
 
 
 #filter and project trips
 
-locs.df<-interp.23 %>%   #cleanLocs.rouzic23 %>% 
+locs.df23<-interp.23 %>%   #cleanLocs.rouzic23 %>% 
     dplyr::mutate(sero=sero,
                  #  deploy=as.factor(deploy),
                   sex=sex) %>% 
@@ -498,7 +500,7 @@ locs.df<-interp.23 %>%   #cleanLocs.rouzic23 %>%
     as.data.frame(.)
 
 
-locs.spdf<-interp.23 %>%  #cleanLocs.rouzic23 %>% 
+locs.spdf23<-interp.23 %>%  #cleanLocs.rouzic23 %>% 
      dplyr::mutate(sero=sero,
                    #deploy=as.factor(deploy),
                    sex=sex) %>% 
@@ -510,24 +512,24 @@ locs.spdf<-interp.23 %>%  #cleanLocs.rouzic23 %>%
     st_transform(., projcrs) %>%
     as_Spatial(.)
 
-rm(cleanLocs.rouzic23)
+#rm(cleanLocs.rouzic23)
 
 #load bathymetry layer
 
 
 #get reduced dataframes 
-locs.fem.df<-get_df_sexed(locs.df,sex,SEX="F") 
-locs.mal.df<-get_df_sexed(locs.df,sex,SEX="M") 
+locs.fem.df23<-get_df_filtered(locs.df23,sex,"F") 
+locs.mal.df23<-get_df_filtered(locs.df23,sex,"M") 
 
 #get dataframes as ltraj for brb function
-locs.ltr.fem<-as.ltraj(locs.fem.df[,c("long","lat")], 
-             date=locs.fem.df$datetime, 
-             id=locs.fem.df$id,
+locs.ltr.fem23<-as.ltraj(locs.fem.df23[,c("long","lat")], 
+             date=locs.fem.df23$datetime, 
+             id=locs.fem.df23$id,
              typeII = TRUE)
 
-locs.ltr.mal<-as.ltraj(locs.mal.df[,c("long","lat")], 
-             date=locs.mal.df$datetime, 
-             id=locs.mal.df$id,
+locs.ltr.mal23<-as.ltraj(locs.mal.df23[,c("long","lat")], 
+             date=locs.mal.df23$datetime, 
+             id=locs.mal.df23$id,
              typeII = TRUE)
 
 
@@ -557,22 +559,22 @@ HMIN=10000
 GRID=500
 
 #get D parameters for BRB function
-Tmal<-BRB.D(locs.ltr.mal, Tmax = TMAX, Lmin = LMIN)
-Tfem<-BRB.D(locs.ltr.fem, Tmax = TMAX, Lmin = LMIN)
+Tmal23<-BRB.D(locs.ltr.mal23, Tmax = TMAX, Lmin = LMIN)
+Tfem23<-BRB.D(locs.ltr.fem23, Tmax = TMAX, Lmin = LMIN)
 
 
 #BRB function
-KUD.mal<-get_brb_raster(locs.ltr.mal,Tmal,
+KUD.mal23<-get_brb_raster(locs.ltr.mal23,Tmal23,
                         TMAX,LMIN,
                         HMIN,GRID)
-KUD.fem<-get_brb_raster(locs.ltr.fem,Tfem,
+KUD.fem23<-get_brb_raster(locs.ltr.fem23,Tfem23,
                         TMAX,LMIN,
                         HMIN,GRID)
 
-ver.mal.90<-st_as_sf(getverticeshr(KUD.mal, percent=90),crs = projcrs)
-ver.mal.50<-st_as_sf(getverticeshr(KUD.mal, percent=50),crs = projcrs)
-ver.fem.90<-st_as_sf(getverticeshr(KUD.fem, percent=90),crs = projcrs)
-ver.fem.50<-st_as_sf(getverticeshr(KUD.fem, percent=50),crs = projcrs)
+ver.mal23.90<-st_as_sf(getverticeshr(KUD.mal23, percent=90),crs = projcrs)
+ver.mal23.50<-st_as_sf(getverticeshr(KUD.mal23, percent=50),crs = projcrs)
+ver.fem23.90<-st_as_sf(getverticeshr(KUD.fem23, percent=90),crs = projcrs)
+ver.fem23.50<-st_as_sf(getverticeshr(KUD.fem23, percent=50),crs = projcrs)
 
 #BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=GRID,meth="BA",percent=90)
 
@@ -622,18 +624,18 @@ mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
 
 
 #plot
-  kern.sex<-ggplot()+
+  kern.sex23<-ggplot()+
    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver.fem.90, fill=mycol2.90[1] ,
+    geom_sf(data=ver.fem23.90, fill=mycol2.90[1] ,
                              colour=NA,
                              alpha=0.2) + 
-      geom_sf(data=ver.mal.90, fill=mycol2.90[2] ,
+      geom_sf(data=ver.mal23.90, fill=mycol2.90[2] ,
                              colour=NA ,
                              alpha=0.2) +
-         geom_sf(data=ver.fem.50, fill=mycol2.50[1],
+         geom_sf(data=ver.fem23.50, fill=mycol2.50[1],
                              colour=NA,
                              alpha=0.6) +
-    geom_sf(data=ver.mal.50, fill=mycol2.50[2] ,
+    geom_sf(data=ver.mal23.50, fill=mycol2.50[2] ,
                              colour=NA ,
                              alpha=0.6) +
 
@@ -664,7 +666,7 @@ mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
      res=500,
      compression="lzw")
 
-print(kern.sex)
+print(kern.sex23)
 
 dev.off()
 
@@ -746,7 +748,7 @@ interp.0522<- read_delim(here::here("data","RawData",
 
 #filter and project trips
 
-locs.df<-interp.0522 %>%   #cleanLocs.rouzic23 %>% 
+locs.df0522<-interp.0522 %>%   #cleanLocs.rouzic23 %>% 
     # dplyr::mutate(sero=sero,
     #              #  deploy=as.factor(deploy),
     #               sex=sex) %>% 
@@ -761,7 +763,7 @@ locs.df<-interp.0522 %>%   #cleanLocs.rouzic23 %>%
     as.data.frame(.)
 
 
-locs.spdf<-interp.0522 %>%  #cleanLocs.rouzic23 %>% 
+locs.spdf0522<-interp.0522 %>%  #cleanLocs.rouzic23 %>% 
     #  dplyr::mutate(sero=sero,
     #                #deploy=as.factor(deploy),
     #                sex=sex) %>% 
@@ -775,24 +777,24 @@ locs.spdf<-interp.0522 %>%  #cleanLocs.rouzic23 %>%
 
 
 #get reduced dataframes 
-locs.fem.df<-get_df_filtered(locs.df,var=sex,var.select="F") 
-locs.mal.df<-get_df_filtered(locs.df,var=sex,var.select="M") 
+# locs.fem.df<-get_df_filtered(locs.df,sex,"F") 
+# locs.mal.df<-get_df_filtered(locs.df,sex,"M") 
+# 
+# #get dataframes as ltraj for brb function
+# locs.ltr.fem<-as.ltraj(locs.fem.df[,c("long","lat")], 
+#              date=locs.fem.df$datetime, 
+#              id=locs.fem.df$id,
+#              typeII = TRUE)
+# 
+# locs.ltr.mal<-as.ltraj(locs.mal.df[,c("long","lat")], 
+#              date=locs.mal.df$datetime, 
+#              id=locs.mal.df$id,
+#              typeII = TRUE)
 
-#get dataframes as ltraj for brb function
-locs.ltr.fem<-as.ltraj(locs.fem.df[,c("long","lat")], 
-             date=locs.fem.df$datetime, 
-             id=locs.fem.df$id,
-             typeII = TRUE)
 
-locs.ltr.mal<-as.ltraj(locs.mal.df[,c("long","lat")], 
-             date=locs.mal.df$datetime, 
-             id=locs.mal.df$id,
-             typeII = TRUE)
-
-
-locs.ltr.all<-as.ltraj(locs.df[,c("long","lat")], 
-             date=locs.df$datetime, 
-             id=locs.df$id,
+locs.ltr.all<-as.ltraj(locs.df0522[,c("long","lat")], 
+             date=locs.df0522$datetime, 
+             id=locs.df0522$id,
              typeII = TRUE)
 
 
@@ -813,7 +815,8 @@ locs.ltr.all<-as.ltraj(locs.df[,c("long","lat")],
 # BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=1000,meth="BA",percent=90)
 # BA.KUD.50<-kerneloverlap(locs.spdf[,"sex"], grid=1000,meth="BA",percent=50)
 
-
+ BA.KUD.90<-kerneloverlap(locs.spdf0522[,"year"], grid=1000,meth="BA",percent=90)
+ BA.KUD.50<-kerneloverlap(locs.spdf0522[,"year"], grid=1000,meth="BA",percent=50)
 
 ##kernels with brb
 TMAX=3600
@@ -822,33 +825,34 @@ HMIN=10000
 GRID=500
 
 #get D parameters for BRB function
-Tmal<-BRB.D(locs.ltr.mal, Tmax = TMAX, Lmin = LMIN)
-Tfem<-BRB.D(locs.ltr.fem, Tmax = TMAX, Lmin = LMIN)
+# Tmal<-BRB.D(locs.ltr.mal, Tmax = TMAX, Lmin = LMIN)
+# Tfem<-BRB.D(locs.ltr.fem, Tmax = TMAX, Lmin = LMIN)
 Tall<-BRB.D(locs.ltr.all, Tmax = TMAX, Lmin = LMIN)
 
 #BRB function
-KUD.mal<-get_brb_raster(locs.ltr.mal,Tmal,
-                        TMAX,LMIN,
-                        HMIN,GRID)
-KUD.fem<-get_brb_raster(locs.ltr.fem,Tfem,
-                        TMAX,LMIN,
-                        HMIN,GRID)
+# KUD.mal<-get_brb_raster(locs.ltr.mal,Tmal,
+#                         TMAX,LMIN,
+#                         HMIN,GRID)
+# KUD.fem<-get_brb_raster(locs.ltr.fem,Tfem,
+#                         TMAX,LMIN,
+#                         HMIN,GRID)
 
 KUD.all<-get_brb_raster(locs.ltr.all,Tall,
                         TMAX,LMIN,
                         HMIN,GRID)
-
-ver.mal.90<-st_as_sf(getverticeshr(KUD.mal, percent=90),crs = projcrs)
-ver.mal.50<-st_as_sf(getverticeshr(KUD.mal, percent=50),crs = projcrs)
-ver.fem.90<-st_as_sf(getverticeshr(KUD.fem, percent=90),crs = projcrs)
-ver.fem.50<-st_as_sf(getverticeshr(KUD.fem, percent=50),crs = projcrs)
+# 
+# ver.mal.90<-st_as_sf(getverticeshr(KUD.mal, percent=90),crs = projcrs)
+# ver.mal.50<-st_as_sf(getverticeshr(KUD.mal, percent=50),crs = projcrs)
+# ver.fem.90<-st_as_sf(getverticeshr(KUD.fem, percent=90),crs = projcrs)
+# ver.fem.50<-st_as_sf(getverticeshr(KUD.fem, percent=50),crs = projcrs)
 ver.all.90<-st_as_sf(getverticeshr(KUD.all, percent=90),crs = projcrs)
 ver.all.50<-st_as_sf(getverticeshr(KUD.all, percent=50),crs = projcrs)
 
 #BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=GRID,meth="BA",percent=90)
 
-##Plot kernels for males and females
 
+#extent of study area
+ext.brit<-terra::ext(250000,650000,5270000,5650000)
 bathym<-terra::rast(here::here("data",
                                "RawData",
                                "shapefiles",
@@ -884,8 +888,7 @@ coord_rouzic<-colo_coord_rouzic %>%
     sf::st_set_crs(4326) %>% 
     st_transform(.,projcrs)
 
-#extent of study area
-ext.brit<-terra::ext(300000,650000,5270000,5650000)
+
 
 #colors for plot
 mycol90<-viridis(n=2,begin=0.2,end=0.8,option="D")
@@ -895,12 +898,13 @@ mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
 #plot
   kern.all<-ggplot()+
    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver.all.90, fill=mycol2.90[1] ,
+    geom_sf(data=ver.all.90, fill="grey50" ,
                              colour=NA,
-                             alpha=0.2) + 
-      geom_sf(data=ver.all.50, fill=mycol2.50[1] ,
+                             alpha=0.7) + 
+      geom_sf(data=ver.all.50, fill="grey10" ,
                              colour=NA ,
-                             alpha=0.2) +
+                             alpha=0.8) +
+     #   geom_path(data=locs.df0522,aes(x=long,y=lat,group=year), alpha=0.2) +
    geom_sf(data=shp,fill="grey90") +
   geom_sf(data=coast) +
  geom_sf(data = coord_rouzic,
@@ -935,56 +939,56 @@ dev.off()
 
 
 #plot
-  kern.sex<-ggplot()+
-   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver.fem.90, fill=mycol2.90[1] ,
-                             colour=NA,
-                             alpha=0.2) + 
-      geom_sf(data=ver.mal.90, fill=mycol2.90[2] ,
-                             colour=NA ,
-                             alpha=0.2) +
-         geom_sf(data=ver.fem.50, fill=mycol2.50[1],
-                             colour=NA,
-                             alpha=0.6) +
-    geom_sf(data=ver.mal.50, fill=mycol2.50[2] ,
-                             colour=NA ,
-                             alpha=0.6) +
-
-   geom_sf(data=shp,fill="grey90") +
-  geom_sf(data=coast) +
- geom_sf(data = coord_rouzic,
-         shape=23,
-         colour="black",
-         fill="yellow",
-         size=4) +
- coord_sf(xlim=ext.brit[c(1,2)],
-          ylim=ext.brit[c(3,4)],
-          expand=F) +
-  labs(title="Distribution males vs females") +
-    annotation_scale(location = "br",
-                     width_hint = 0.15,
-                     pad_x = unit(0.7, "cm"),
-                     bar_cols = "black") +
-    annotation_north_arrow(location = "br",
-                           which_north = "true",
-                           style = ggspatial::north_arrow_nautical(),
-                           pad_y = unit(0.8, "cm")) +
-    theme_bw() 
-
-   tiff(here::here("outputs","adults_distribution_kernel_sex_05_22_correct.tif"),
-     width=3500,
-     height=3500,
-     res=500,
-     compression="lzw")
-
-print(kern.sex)
-
-dev.off()
+#   kern.sex<-ggplot()+
+#    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+#     geom_sf(data=ver.fem.90, fill=mycol2.90[1] ,
+#                              colour=NA,
+#                              alpha=0.2) + 
+#       geom_sf(data=ver.mal.90, fill=mycol2.90[2] ,
+#                              colour=NA ,
+#                              alpha=0.2) +
+#          geom_sf(data=ver.fem.50, fill=mycol2.50[1],
+#                              colour=NA,
+#                              alpha=0.6) +
+#     geom_sf(data=ver.mal.50, fill=mycol2.50[2] ,
+#                              colour=NA ,
+#                              alpha=0.6) +
+# 
+#    geom_sf(data=shp,fill="grey90") +
+#   geom_sf(data=coast) +
+#  geom_sf(data = coord_rouzic,
+#          shape=23,
+#          colour="black",
+#          fill="yellow",
+#          size=4) +
+#  coord_sf(xlim=ext.brit[c(1,2)],
+#           ylim=ext.brit[c(3,4)],
+#           expand=F) +
+#   labs(title="Distribution males vs females") +
+#     annotation_scale(location = "br",
+#                      width_hint = 0.15,
+#                      pad_x = unit(0.7, "cm"),
+#                      bar_cols = "black") +
+#     annotation_north_arrow(location = "br",
+#                            which_north = "true",
+#                            style = ggspatial::north_arrow_nautical(),
+#                            pad_y = unit(0.8, "cm")) +
+#     theme_bw() 
+# 
+#    tiff(here::here("outputs","adults_distribution_kernel_sex_05_22_correct.tif"),
+#      width=3500,
+#      height=3500,
+#      res=500,
+#      compression="lzw")
+# 
+# print(kern.sex)
+# 
+# dev.off()
 
 
 ```
 
-# Checking proportions of trips covered wit interpolated data
+# Checking proportions of trips covered with interpolated data
 
 ```{r}
 #calculate proportion of trips covered with interpolated data
@@ -999,30 +1003,50 @@ for (a in 1:nrow(trips6)){
    tripy<-trips6$trip.id[a]
    tripDurtoth<-trips6$TripDurh[a]
    
-   interp.23$travelNb[interp.23$id==id.name & 
+   interp.23$travelNb[which(as.character(interp.23$id)==id.name & 
                           interp.23$datetime>=trips6$DateStart[a] & 
-                          interp.23$datetime<=trips6$DateEnd[a]]<-trav
-   interp.23$trip.id[interp.23$id==id.name & 
+                          interp.23$datetime<=trips6$DateEnd[a])]<-trav
+   interp.23$trip.id[which(as.character(interp.23$id)==id.name & 
                          interp.23$datetime>=trips6$DateStart[a] & 
-                         interp.23$datetime<=trips6$DateEnd[a]]<-tripy
- interp.23$TripDurToth[interp.23$id==id.name & 
+                         interp.23$datetime<=trips6$DateEnd[a])]<-tripy
+ interp.23$TripDurToth[which(as.character(interp.23$id)==id.name & 
                            interp.23$datetime>=trips6$DateStart[a] & 
-                           interp.23$datetime<=trips6$DateEnd[a]]<-tripDurtoth
-    
+                           interp.23$datetime<=trips6$DateEnd[a])]<-tripDurtoth
 }
 
-trav<-interp.23 %>% 
+interp.23<-interp.23[!is.na(interp.23$TripDurToth),]
+
+#caclulate bout duration
+trav.23<-interp.23 %>% 
     group_by(trip.id) %>% 
     summarize(TripDurParth=n()*10/60) %>% 
     ungroup
 
-interp.trav<-interp.23 %>% 
-    left_join(trav,by="trip.id")
+#associate duration with trip id
+interp.trav23<-interp.23 %>% 
+    left_join(trav.23,by="trip.id")
 
-short.trav<-interp.trav %>% 
+#have bout duration and total trip duration from raw data
+short.trav23<-interp.trav23 %>% 
     group_by(trip.id) %>% 
     slice(1) %>% 
-    mutate(PropDur=TripDurParth/TripDurToth*100)
+    mutate(PropDur=TripDurParth/TripDurToth*100) %>% 
+    dplyr::select(year,id,trip.id,TripDurToth,TripDurParth, PropDur )
+
+hist(short.trav23$PropDur,breaks=seq(0,100,10))
+
+#calculate duration in each activity relative to bout and trip duration
+act23<-interp.trav23 %>% 
+    group_by(trip.id,behaviour) %>% 
+    count() %>% 
+    mutate(Durh=n*10/60) %>% 
+    ungroup() %>% 
+    left_join(.,short.trav23,by="trip.id") %>% 
+    mutate(PropActTrip=Durh/TripDurParth*100,
+           behaviour=as.factor(behaviour))
+
+
+
 
 
 ```
