@@ -647,12 +647,16 @@ print(totyear)
 
 mylegendyear<-g_legend(totyear)
 
+tiff(here::here("outputs","Predictions_trip_characteristics_2005-2023.png"),
+        width=4000,height=6000,res=400,
+     compression="lzw")
 
 grid.arrange(arrangeGrob(distdate+theme(legend.position="none"),
              durdate+theme(legend.position="none"),
              totpathdate+theme(legend.position="none"),
-             ncol=3),
+             nrow=3),
              mylegendyear, ncol=2,widths=c(1,0.1)) 
+dev.off()
 ```
 
 # Test sex

@@ -438,6 +438,53 @@ grid.arrange(kern.sex.juil,kern.sex.aout,kern.sex.sept,
              nrow=1,ncol=3)
 
 dev.off()
+
+
+
+
+path<-locs %>% 
+    as.data.frame()
+
+ext.brit<-terra::ext(300000,700000,5200000,5680000)
+
+##paths sero
+path.sero<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+     geom_path(data=path, aes(x=coords.x1, y=coords.x2,
+                              colour=sero), alpha=0.5) +
+    geom_sf(data=shp,fill="grey90") +
+    geom_sf(data=coast) +
+    geom_sf(data = coord_rouzic,
+            shape=23, 
+            colour="black",
+            fill="yellow", 
+            size=4) + 
+  #  labs(title="Distribution infected vs uninfected") +
+    coord_sf(xlim=ext.brit[c(1,2)],
+             ylim=ext.brit[c(3,4)],
+             expand=F) +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+
+print(path.sero)
+
+tiff(here::here("outputs","adults_distribution_kernel_sero.tif"),
+     width=3500,
+     height=3500,
+     res=500,
+     compression="lzw")
+print(path.sero)
+dev.off()
+
+
+
 ```
 
 # GIF animation

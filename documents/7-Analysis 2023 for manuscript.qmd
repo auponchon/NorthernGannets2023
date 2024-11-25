@@ -32,7 +32,7 @@ library(ggcorrplot)
 
 source(here("R","trip_functions.R"))
 
-mycol<-c("darkorchid4","cyan3") #"deepskyblue3"
+mycolsex<-c("darkorchid4","cyan3") #"deepskyblue3"
 mycol2.90<-viridis(n=2,begin=0,end=0.6,option="D")
 mycol2.50<-viridis(n=2,begin=0.1,end=0.7,option="D")
 
@@ -67,57 +67,74 @@ lands<-land %>%
       droplevels() %>% 
       left_join(., serol.rouzic, by=c("id","sex","sero","deploy","stage"),keep=F)
 
-#get the 4 numerical variables which are used as proxies of body condition 
-mat<-trips %>% 
-    dplyr::distinct(id,body_weight,wing, culmen,tarsus, .keep_all = F) %>% 
-    dplyr::select(-id) %>% 
-    scale(.)
-
-#check correlation between variables
-corr_matrix <- cor(mat)
-corrplot(corr_matrix, method="number")
-
-#pca to calculate a body condition index
-data.pca <- princomp(mat)
-summary(data.pca)
-fviz_pca_var(data.pca, col.var = "cos2",
-            gradient.cols = c("black", "orange", "green"),
-            repel = TRUE)
-
-#extract pca results
-cond<-get_pca_ind(data.pca)
-
-#extract the axis 1 values
-IDS<-trips %>% 
-      dplyr::distinct(id,body_weight,wing, culmen, .keep_all = F) %>% 
-    dplyr::mutate(body_cond=cond$coord[,1])
-
-#merge body condition index with rest of data
-trips.cond<-trips %>% 
-    left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
-lands.cond<-lands %>% 
-    left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
+# #get the 4 numerical variables which are used as proxies of body condition 
+# mat<-trips %>% 
+#     dplyr::distinct(id,body_weight,wing, culmen,tarsus, .keep_all = F) %>% 
+#     dplyr::select(-id) %>% 
+#     scale(.)
+# 
+# #check correlation between variables
+# corr_matrix <- cor(mat)
+# corrplot(corr_matrix, method="number")
+# 
+# #pca to calculate a body condition index
+# data.pca <- princomp(mat)
+# summary(data.pca)
+# fviz_pca_var(data.pca, col.var = "cos2",
+#             gradient.cols = c("black", "orange", "green"),
+#             repel = TRUE)
+# 
+# #extract pca results
+# cond<-get_pca_ind(data.pca)
+# 
+# #extract the axis 1 values
+# IDS<-trips %>% 
+#       dplyr::distinct(id,body_weight,wing, culmen, .keep_all = F) %>% 
+#     dplyr::mutate(body_cond=cond$coord[,1])
+# 
+# #merge body condition index with rest of data
+# trips.cond<-trips %>% 
+#     left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
+# lands.cond<-lands %>% 
+#     left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
 
 
 
 #Table summary for trips
 sum.ids<-trips6 %>% 
+    group_by(sero) %>% 
     summarize(Ids=length(unique(id)),
               Trips=length(unique(trip.id)),
               Debut=min(DateEnd),
-              Fin=max(DateEnd))
+              Fin=max(DateEnd)) 
   
 kbl(sum.ids,caption="Sample size for trips") %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
+nb.trips.sum<-trips6 %>% 
+    group_by(sero,id) %>% 
+    summarize(Trips=mean(difftime(max(DateEnd),min(DateStart),units="days"))) %>% 
+    summarize(cc=mean(Trips),
+              SE=std.error(Trips),
+              Min=min(Trips),
+              Max=max(Trips))
+
+
+nb.trips<-trips6 %>% 
+     group_by(id, sero) %>% 
+     count() %>% 
+     group_by(sero) %>% 
+     summarize(Min=min(n),
+               Max=max(n))
 
 sum.id<- trips6 %>% 
-    group_by(id) %>% 
+    group_by(id,sero) %>% 
     summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
                      ~ mean(.x, na.rm = TRUE))) %>% 
     as.data.frame()
 
 sum.trips1<- sum.id %>% 
+    group_by(sero) %>% 
     summarize(across(where(is.numeric), 
                      list(Mean=mean,
                           SE=plotrix::std.error,
@@ -127,13 +144,14 @@ sum.trips1<- sum.id %>%
 
 
 sum.trips<-sum.trips1 %>% 
+    group_by(sero) %>% 
            dplyr::mutate(MeanDist=paste(Distmaxkm_Mean,Distmaxkm_SE,sep=" ± "),
                          DistRange=paste(Distmaxkm_Min,Distmaxkm_Max,sep=" - "),
                          MeanDur=paste(TripDurh_Mean,TripDurh_SE,sep=" ± "),
                          DurRange=paste(TripDurh_Min,TripDurh_Max,sep=" - "),     
                          MeanPath=paste(TotalPathkm_Mean,TotalPathkm_SE,sep=" ± "),
                       PathRange=paste(TotalPathkm_Min,TotalPathkm_Max,sep=" - ")) %>%
-        dplyr::select(-c(1:12))
+        dplyr::select(-c(2:13))
 
 lands.ids<-land %>% 
     summarize(Ids=length(unique(id)),
@@ -145,18 +163,20 @@ kbl(lands.ids,caption="Sample size for periods on land") %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 land.id<- land %>% 
-    group_by(id) %>% 
+    group_by(sero,id) %>% 
     summarize(Time= mean(LandDurh, na.rm=T)) %>% 
     as.data.frame()
 
 sum.lands<- land.id %>% 
+    group_by(sero) %>% 
     summarize(across(where(is.numeric), 
                      list(mean=mean,
                           se=plotrix::std.error))) %>% 
     mutate(across(where(is.numeric), round,digits=1)) 
 
 kbl(sum.trips,caption="Summary of trip characteristics - Gaps <6h",
-    col.names=c("Maximal distance (km)",
+    col.names=c("Sero",
+                "Maximal distance (km)",
                 "Maximal distance (km)",
                 "Trip Duration (h)",
                 "Trip Duration (h)",
@@ -165,7 +185,7 @@ kbl(sum.trips,caption="Summary of trip characteristics - Gaps <6h",
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 kbl(sum.lands,caption="Summary of nest attendance",
-    col.names=c("DurationMean","DurationSE")) %>%
+    col.names=c("Sero","DurationMean","DurationSE")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 
@@ -180,13 +200,13 @@ kbl(sum.lands,caption="Summary of nest attendance",
 #| message: false
 
 source(here::here("R","stats_functions.R"))
-var<-c('day','sex')
+var<-c('day','sex','sero')
 
 #summary of all trips (26 adults)
-trips<-trips.cond %>% 
+trips<-trips %>% 
        mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02")))
 
-lands<-lands.cond %>% 
+lands<-lands %>% 
       mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02")))
 
 
@@ -194,23 +214,23 @@ lands<-lands.cond %>%
 newdat<-expand.grid(site=unique(trips$site),
                     day=seq(min(trips$day),
                             max(trips$day),1),
-             #       sero=unique(trips$sero),
+                    sero=unique(trips$sero),
                # body_cond=seq(-2.1,3.3,0.1),
                     sex=unique(trips$sex))
 
 newdatland<-expand.grid(site=unique(trips$site),
                     day=seq(min(trips$day),
                             max(trips$day),1),
-                #    sero=unique(trips$sero),
+                    sero=unique(trips$sero),
                 #    body_cond=seq(-2.1,3.3,0.1),
                     sex=unique(trips$sex))
 
 
-glm.dist1<-lme(sqrt(Distmaxkm) ~ day + sex*sero*body_cond ,
+glm.dist1<-lme(sqrt(Distmaxkm) ~ day + sex*sero ,
               random= ~1| id,
               data=trips)
 
-glm.dist2<-lme(sqrt(Distmaxkm) ~ day + sex+sero*body_cond,
+glm.dist2<-lme(sqrt(Distmaxkm) ~ day + sex+sero,
               random= ~1| id,
               data=trips)
 
@@ -225,18 +245,18 @@ glm.dist4<-lme(sqrt(Distmaxkm) ~ day + sex ,
 AIC(glm.dist1,glm.dist2,glm.dist3,glm.dist4)
 
 
-summary(glm.dist4)
-anova(glm.dist4)
+summary(glm.dist2)
+anova(glm.dist2)
 
 qqnorm(resid(glm.dist4))
 qqline(resid(glm.dist4))
 
 
-glm.dur1<-lme(sqrt(TripDurh) ~ day + sex*sero*body_cond ,
+glm.dur1<-lme(sqrt(TripDurh) ~ day + sex*sero ,
               random= ~1| id,
               data=trips)
 
-glm.dur2<-lme(sqrt(TripDurh) ~ day + sex+sero*body_cond,
+glm.dur2<-lme(sqrt(TripDurh) ~ day + sex+sero,
               random= ~1| id,
               data=trips)
 
@@ -250,19 +270,19 @@ glm.dur4<-lme(sqrt(TripDurh) ~ day + sex ,
 
 AIC(glm.dur1,glm.dur2,glm.dur3,glm.dur4)
 
-summary(glm.dur4)
-anova(glm.dur4)
+summary(glm.dur3)
+anova(glm.dur3)
 
 qqnorm(resid(glm.dur4))
 qqline(resid(glm.dur4))
 
 
 ##stats for total path
-glm.path1<-lme(sqrt(TotalPathkm) ~ day + sex*sero*body_cond ,
+glm.path1<-lme(sqrt(TotalPathkm) ~ day + sex*sero ,
               random= ~1| id,
               data=trips)
 
-glm.path2<-lme(sqrt(TotalPathkm) ~ day + sex+sero*body_cond,
+glm.path2<-lme(sqrt(TotalPathkm) ~ day + sex+sero,
               random= ~1| id,
               data=trips)
 
@@ -276,18 +296,18 @@ glm.path4<-lme(sqrt(TotalPathkm) ~ day + sex ,
 
 AIC(glm.path1,glm.path2,glm.path3,glm.path4)
 
-summary(glm.path4)
-anova(glm.path4)
+summary(glm.path2)
+anova(glm.path2)
 
 qqnorm(resid(glm.path4))
 qqline(resid(glm.path4))
 
 ##stats for time on land
-glm.land1<-lme(sqrt(LandDurh)~ day + sex*sero*body_cond,
+glm.land1<-lme(sqrt(LandDurh)~ day + sex*sero,
               random= ~1| id,
               data=lands)
 
-glm.land2<-lme(sqrt(LandDurh)~ day + sex+sero*body_cond,
+glm.land2<-lme(sqrt(LandDurh)~ day + sex+sero,
               random= ~1| id,
               data=lands)
 
@@ -306,14 +326,16 @@ glm.land5<-lme(sqrt(LandDurh)~ day ,
 AIC(glm.land1,glm.land2,glm.land3,glm.land4,glm.land5)
 
 
-summary(glm.land5)
-anova(glm.land5)
+summary(glm.land3)
+anova(glm.land3)
 
 qqnorm(resid(glm.land5))
 qqline(resid(glm.land5))
 
 
 #predict fitted values and CI
+var<-c('day','sex')
+
 
 predist<-predict_lme_results(glm.dist4,newdat,var)
 preddur<-predict_lme_results(glm.dur4,newdat,var)
@@ -328,7 +350,7 @@ distlmmsex<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=sex)) +
                 y= NULL,
                 fill=sex),
            alpha=0.4,colour = NA) +
-geom_point(alpha=0.6) +
+geom_point(alpha=0.4) +
  geom_line(data=predist,aes(x=day,y=emmean^2),lwd=1.5) +
      labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
     scale_x_continuous(limits=c(0,110),
@@ -351,7 +373,7 @@ durlmmsex<-ggplot(trips, aes(x=day, y=TripDurh ,colour=sex)) +
                 y= NULL,
                 fill=sex), 
             alpha=0.4,colour = NA) +
-geom_point(alpha=0.6) +
+geom_point(alpha=0.4) +
  geom_line(data=preddur,aes(x=day,y=emmean^2),lwd=1.5) +
      labs(y="Trip Duration (h)",tag="b)",x="") +
     scale_x_continuous(limits=c(0,110),
@@ -375,7 +397,7 @@ pathlmmsex<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=sex)) +
                 y= NULL,
                 fill=sex), 
             alpha=0.4,colour = NA) +
-geom_point(alpha=0.6) +
+geom_point(alpha=0.4) +
  geom_line(data=predpath,aes(x=day,y=emmean^2),lwd=1.5) +
      labs(y="Total distance travelled (km)",tag="c)",x="") +
     scale_x_continuous(limits=c(0,110),
@@ -399,7 +421,7 @@ landlmmsex<-ggplot(lands, aes(x=day, y=LandDurh ,colour=sex)) +
                 y= NULL,
                 fill=sex), 
             alpha=0.4,colour = NA) +
-geom_point(alpha=0.6) +
+geom_point(alpha=0.4) +
  geom_line(data=predland,aes(x=day,y=emmean^2),lwd=1.5) +
      labs(y="Nest attendance (h)",tag="d)",x="") +
     scale_x_continuous(limits=c(0,110),
@@ -521,6 +543,9 @@ locs.spdf23<-interp.23 %>%  #cleanLocs.rouzic23 %>%
 locs.fem.df23<-get_df_filtered(locs.df23,sex,"F") 
 locs.mal.df23<-get_df_filtered(locs.df23,sex,"M") 
 
+locs.pos.df23<-get_df_filtered(locs.df23,sero,"1") 
+locs.neg.df23<-get_df_filtered(locs.df23,sero,"0") 
+
 #get dataframes as ltraj for brb function
 locs.ltr.fem23<-as.ltraj(locs.fem.df23[,c("long","lat")], 
              date=locs.fem.df23$datetime, 
@@ -531,6 +556,18 @@ locs.ltr.mal23<-as.ltraj(locs.mal.df23[,c("long","lat")],
              date=locs.mal.df23$datetime, 
              id=locs.mal.df23$id,
              typeII = TRUE)
+
+#get dataframes as ltraj for brb function
+locs.ltr.pos23<-as.ltraj(locs.pos.df23[,c("long","lat")], 
+             date=locs.pos.df23$datetime, 
+             id=locs.pos.df23$id,
+             typeII = TRUE)
+
+locs.ltr.neg23<-as.ltraj(locs.neg.df23[,c("long","lat")], 
+             date=locs.neg.df23$datetime, 
+             id=locs.neg.df23$id,
+             typeII = TRUE)
+
 
 
 ##kernels with normal ud
@@ -561,6 +598,8 @@ GRID=500
 #get D parameters for BRB function
 Tmal23<-BRB.D(locs.ltr.mal23, Tmax = TMAX, Lmin = LMIN)
 Tfem23<-BRB.D(locs.ltr.fem23, Tmax = TMAX, Lmin = LMIN)
+Tpos23<-BRB.D(locs.ltr.pos23, Tmax = TMAX, Lmin = LMIN)
+Tneg23<-BRB.D(locs.ltr.neg23, Tmax = TMAX, Lmin = LMIN)
 
 
 #BRB function
@@ -571,10 +610,22 @@ KUD.fem23<-get_brb_raster(locs.ltr.fem23,Tfem23,
                         TMAX,LMIN,
                         HMIN,GRID)
 
+KUD.pos23<-get_brb_raster(locs.ltr.pos23,Tpos23,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+KUD.neg23<-get_brb_raster(locs.ltr.neg23,Tneg23,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+
 ver.mal23.90<-st_as_sf(getverticeshr(KUD.mal23, percent=90),crs = projcrs)
 ver.mal23.50<-st_as_sf(getverticeshr(KUD.mal23, percent=50),crs = projcrs)
 ver.fem23.90<-st_as_sf(getverticeshr(KUD.fem23, percent=90),crs = projcrs)
 ver.fem23.50<-st_as_sf(getverticeshr(KUD.fem23, percent=50),crs = projcrs)
+
+ver.pos23.90<-st_as_sf(getverticeshr(KUD.pos23, percent=90),crs = projcrs)
+ver.pos23.50<-st_as_sf(getverticeshr(KUD.pos23, percent=50),crs = projcrs)
+ver.neg23.90<-st_as_sf(getverticeshr(KUD.neg23, percent=90),crs = projcrs)
+ver.neg23.50<-st_as_sf(getverticeshr(KUD.neg23, percent=50),crs = projcrs)
 
 #BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=GRID,meth="BA",percent=90)
 
@@ -619,25 +670,28 @@ ver.fem23.50<-st_as_sf(getverticeshr(KUD.fem23, percent=50),crs = projcrs)
     
 
 #colors for plot
-mycol90<-viridis(n=2,begin=0.2,end=0.8,option="D")
-mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
+mycol90sero<-c( "#F6A173", "#81C07A" )
+mycol50sero<-c("#EA4C3B","#004616") 
+
+mycol90sex<-c("darkorchid1","cyan")
+mycol50sex<-mycolsex
 
 
 #plot
   kern.sex23<-ggplot()+
    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver.fem23.90, fill=mycol2.90[1] ,
+    geom_sf(data=ver.fem23.90, fill=mycol90sex[1] ,
                              colour=NA,
                              alpha=0.2) + 
-      geom_sf(data=ver.mal23.90, fill=mycol2.90[2] ,
+      geom_sf(data=ver.mal23.90, fill=mycol90sex[2] ,
                              colour=NA ,
                              alpha=0.2) +
-         geom_sf(data=ver.fem23.50, fill=mycol2.50[1],
+         geom_sf(data=ver.fem23.50, fill=mycol50sex[1],
                              colour=NA,
-                             alpha=0.6) +
-    geom_sf(data=ver.mal23.50, fill=mycol2.50[2] ,
+                             alpha=0.4) +
+    geom_sf(data=ver.mal23.50, fill=mycol50sex[2] ,
                              colour=NA ,
-                             alpha=0.6) +
+                             alpha=0.4) +
 
    geom_sf(data=shp,fill="grey90") +
   geom_sf(data=coast) +
@@ -649,7 +703,7 @@ mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
  coord_sf(xlim=ext.brit[c(1,2)],
           ylim=ext.brit[c(3,4)],
           expand=F) +
-  labs(title="Distribution males vs females") +
+  labs(tag="a)") +
     annotation_scale(location = "br",
                      width_hint = 0.15,
                      pad_x = unit(0.7, "cm"),
@@ -660,13 +714,51 @@ mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
                            pad_y = unit(0.8, "cm")) +
     theme_bw() 
 
-   tiff(here::here("outputs","adults_distribution_kernel_sex_2023_correct.tif"),
-     width=3500,
-     height=3500,
+
+#plot
+  kern.sero23<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver.pos23.90, fill=mycol90sero[1] ,
+                             colour=NA,
+                             alpha=0.5) + 
+      geom_sf(data=ver.neg23.90, fill=mycol90sero[2] ,
+                             colour=NA ,
+                             alpha=0.5) +
+         geom_sf(data=ver.pos23.50, fill=mycol50sero[1],
+                             colour=NA,
+                             alpha=0.4) +
+    geom_sf(data=ver.neg23.50, fill=mycol50sero[2] ,
+                             colour=NA ,
+                             alpha=0.4) +
+
+   geom_sf(data=shp,fill="grey90") +
+  geom_sf(data=coast) +
+ geom_sf(data = coord_rouzic,
+         shape=23,
+         colour="black",
+         fill="yellow",
+         size=4) +
+ coord_sf(xlim=ext.brit[c(1,2)],
+          ylim=ext.brit[c(3,4)],
+          expand=F) +
+  labs(tag="b)") +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+
+   tiff(here::here("outputs","adults_distribution_brb_2023_final.tif"),
+     width=4000,
+     height=2000,
      res=500,
      compression="lzw")
 
-print(kern.sex23)
+grid.arrange(kern.sero23,kern.sex23,ncol=2,nrow=1)
 
 dev.off()
 
@@ -984,69 +1076,6 @@ dev.off()
 # print(kern.sex)
 # 
 # dev.off()
-
-
-```
-
-# Checking proportions of trips covered with interpolated data
-
-```{r}
-#calculate proportion of trips covered with interpolated data
-interp.23$travelNb<-NA
-interp.23$trip.id<-NA
-interp.23$TripDurToth<-NA
-
-#add travel nb and trip id
-for (a in 1:nrow(trips6)){
-   id.name<-trips6$id[a]
-   trav<-trips6$travelNb[a]
-   tripy<-trips6$trip.id[a]
-   tripDurtoth<-trips6$TripDurh[a]
-   
-   interp.23$travelNb[which(as.character(interp.23$id)==id.name & 
-                          interp.23$datetime>=trips6$DateStart[a] & 
-                          interp.23$datetime<=trips6$DateEnd[a])]<-trav
-   interp.23$trip.id[which(as.character(interp.23$id)==id.name & 
-                         interp.23$datetime>=trips6$DateStart[a] & 
-                         interp.23$datetime<=trips6$DateEnd[a])]<-tripy
- interp.23$TripDurToth[which(as.character(interp.23$id)==id.name & 
-                           interp.23$datetime>=trips6$DateStart[a] & 
-                           interp.23$datetime<=trips6$DateEnd[a])]<-tripDurtoth
-}
-
-interp.23<-interp.23[!is.na(interp.23$TripDurToth),]
-
-#caclulate bout duration
-trav.23<-interp.23 %>% 
-    group_by(trip.id) %>% 
-    summarize(TripDurParth=n()*10/60) %>% 
-    ungroup
-
-#associate duration with trip id
-interp.trav23<-interp.23 %>% 
-    left_join(trav.23,by="trip.id")
-
-#have bout duration and total trip duration from raw data
-short.trav23<-interp.trav23 %>% 
-    group_by(trip.id) %>% 
-    slice(1) %>% 
-    mutate(PropDur=TripDurParth/TripDurToth*100) %>% 
-    dplyr::select(year,id,trip.id,TripDurToth,TripDurParth, PropDur )
-
-hist(short.trav23$PropDur,breaks=seq(0,100,10))
-
-#calculate duration in each activity relative to bout and trip duration
-act23<-interp.trav23 %>% 
-    group_by(trip.id,behaviour) %>% 
-    count() %>% 
-    mutate(Durh=n*10/60) %>% 
-    ungroup() %>% 
-    left_join(.,short.trav23,by="trip.id") %>% 
-    mutate(PropActTrip=Durh/TripDurParth*100,
-           behaviour=as.factor(behaviour))
-
-
-
 
 
 ```
