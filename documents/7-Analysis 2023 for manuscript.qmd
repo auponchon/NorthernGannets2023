@@ -456,6 +456,8 @@ dev.off()
 
 # Spatial analysis 2023
 
+(kern.sex23)
+
 ```{r}
 #| echo: false
 #| include: true
@@ -617,15 +619,24 @@ KUD.neg23<-get_brb_raster(locs.ltr.neg23,Tneg23,
                         TMAX,LMIN,
                         HMIN,GRID)
 
-ver.mal23.90<-st_as_sf(getverticeshr(KUD.mal23, percent=90),crs = projcrs)
-ver.mal23.50<-st_as_sf(getverticeshr(KUD.mal23, percent=50),crs = projcrs)
-ver.fem23.90<-st_as_sf(getverticeshr(KUD.fem23, percent=90),crs = projcrs)
-ver.fem23.50<-st_as_sf(getverticeshr(KUD.fem23, percent=50),crs = projcrs)
+ver.mal23.90<-st_as_sf(getverticeshr(KUD.mal23, percent=90),crs = projcrs) %>% 
+    mutate(Sex="90M")
+ver.mal23.50<-st_as_sf(getverticeshr(KUD.mal23, percent=50),crs = projcrs)%>% 
+    mutate(Sex="50M")
+ver.fem23.90<-st_as_sf(getverticeshr(KUD.fem23, percent=90),crs = projcrs)%>% 
+    mutate(Sex="90F")
+ver.fem23.50<-st_as_sf(getverticeshr(KUD.fem23, percent=50),crs = projcrs)%>% 
+    mutate(Sex="50F")
 
-ver.pos23.90<-st_as_sf(getverticeshr(KUD.pos23, percent=90),crs = projcrs)
-ver.pos23.50<-st_as_sf(getverticeshr(KUD.pos23, percent=50),crs = projcrs)
-ver.neg23.90<-st_as_sf(getverticeshr(KUD.neg23, percent=90),crs = projcrs)
-ver.neg23.50<-st_as_sf(getverticeshr(KUD.neg23, percent=50),crs = projcrs)
+
+ver.pos23.90<-st_as_sf(getverticeshr(KUD.pos23, percent=90),crs = projcrs)%>% 
+    mutate(Sero="90+")
+ver.pos23.50<-st_as_sf(getverticeshr(KUD.pos23, percent=50),crs = projcrs)%>% 
+    mutate(Sero="50+")
+ver.neg23.90<-st_as_sf(getverticeshr(KUD.neg23, percent=90),crs = projcrs)%>% 
+    mutate(Sero="90-")
+ver.neg23.50<-st_as_sf(getverticeshr(KUD.neg23, percent=50),crs = projcrs)%>% 
+    mutate(Sero="50-")
 
 #BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=GRID,meth="BA",percent=90)
 
@@ -670,67 +681,78 @@ ver.neg23.50<-st_as_sf(getverticeshr(KUD.neg23, percent=50),crs = projcrs)
     
 
 #colors for plot
-mycol90sero<-c( "#F6A173", "#81C07A" )
-mycol50sero<-c("#EA4C3B","#004616") 
-
-mycol90sex<-c("darkorchid1","cyan")
-mycol50sex<-mycolsex
+mycolsero<-c("#F6A173","#EA4C3B","#81C07A", "#004616")
+mycolsex<-c("darkorchid1","darkorchid4","#60EFFF","#0093AF")
 
 
 #plot
-  kern.sex23<-ggplot()+
-   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver.fem23.90, fill=mycol90sex[1] ,
-                             colour=NA,
-                             alpha=0.2) + 
-      geom_sf(data=ver.mal23.90, fill=mycol90sex[2] ,
-                             colour=NA ,
-                             alpha=0.2) +
-         geom_sf(data=ver.fem23.50, fill=mycol50sex[1],
-                             colour=NA,
-                             alpha=0.4) +
-    geom_sf(data=ver.mal23.50, fill=mycol50sex[2] ,
-                             colour=NA ,
-                             alpha=0.4) +
+kern.sex23<-ggplot()+
+        # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+        geom_sf(data=ver.fem23.90, aes(fill=Sex) , 
+                colour=NA,
+                alpha=0.2) + 
+        geom_sf(data=ver.fem23.50, aes(fill=Sex) , #fill=mycolsex[2],
+                colour=NA ,
+                alpha=0.7) +
+        geom_sf(data=ver.mal23.90, aes(fill=Sex), #fill=mycolsex[3],
+                colour=NA,
+                alpha=0.5) +
+        geom_sf(data=ver.mal23.50, aes(fill=Sex) , #fill=mycolsex[1],
+                colour=NA ,
+                alpha=0.7) +
+        geom_sf(data=shp,fill="grey90") +
+        geom_sf(data=coast) +
+        geom_sf(data = coord_rouzic,
+                shape=23,
+                colour="black",
+                fill="yellow",
+                size=4) +
+        coord_sf(xlim=ext.brit[c(1,2)],
+                 ylim=ext.brit[c(3,4)],
+                 expand=F) +
+        labs(tag="b)") +
+        scale_fill_manual(values=c("50F"="darkorchid4",
+                                   "50M"="#0093AF",
+                                   "90F"="darkorchid1",
+                                   "90M"="#60EFFF"),
+                            labels=c("90F"="90% UD female",
+                                     "50F"="50% UD female",
+                                     "90M" = "90% UD male",
+                                     "50M" = "50% UD male"),
+                       #   levels=c("90F","50F","90M","50M"),
+                            name="Sex") +
+        annotation_scale(location = "br",
+                         width_hint = 0.15,
+                         pad_x = unit(0.7, "cm"),
+                         bar_cols = "black") +
+        annotation_north_arrow(location = "br",
+                               which_north = "true",
+                               style = ggspatial::north_arrow_nautical(),
+                               pad_y = unit(0.8, "cm")) +
+        theme_bw() +
+      theme(legend.position="bottom")+
+      guides(fill=guide_legend(ncol=2))
+   
+  
+print(kern.sex23)
 
-   geom_sf(data=shp,fill="grey90") +
-  geom_sf(data=coast) +
- geom_sf(data = coord_rouzic,
-         shape=23,
-         colour="black",
-         fill="yellow",
-         size=4) +
- coord_sf(xlim=ext.brit[c(1,2)],
-          ylim=ext.brit[c(3,4)],
-          expand=F) +
-  labs(tag="a)") +
-    annotation_scale(location = "br",
-                     width_hint = 0.15,
-                     pad_x = unit(0.7, "cm"),
-                     bar_cols = "black") +
-    annotation_north_arrow(location = "br",
-                           which_north = "true",
-                           style = ggspatial::north_arrow_nautical(),
-                           pad_y = unit(0.8, "cm")) +
-    theme_bw() 
 
 
 #plot
   kern.sero23<-ggplot()+
    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
-    geom_sf(data=ver.pos23.90, fill=mycol90sero[1] ,
-                             colour=NA,
-                             alpha=0.5) + 
-      geom_sf(data=ver.neg23.90, fill=mycol90sero[2] ,
-                             colour=NA ,
-                             alpha=0.5) +
-         geom_sf(data=ver.pos23.50, fill=mycol50sero[1],
-                             colour=NA,
-                             alpha=0.4) +
-    geom_sf(data=ver.neg23.50, fill=mycol50sero[2] ,
-                             colour=NA ,
-                             alpha=0.4) +
-
+     geom_sf(data=ver.pos23.90, aes(fill=Sero) , 
+                colour=NA,
+                alpha=0.4) + 
+        geom_sf(data=ver.pos23.50, aes(fill=Sero) , #fill=mycolsex[2],
+                colour=NA ,
+                alpha=0.7) +
+        geom_sf(data=ver.neg23.90, aes(fill=Sero), #fill=mycolsex[3],
+                colour=NA,
+                alpha=0.4) +
+        geom_sf(data=ver.neg23.50, aes(fill=Sero) , #fill=mycolsex[1],
+                colour=NA ,
+                alpha=0.5) +
    geom_sf(data=shp,fill="grey90") +
   geom_sf(data=coast) +
  geom_sf(data = coord_rouzic,
@@ -740,8 +762,18 @@ mycol50sex<-mycolsex
          size=4) +
  coord_sf(xlim=ext.brit[c(1,2)],
           ylim=ext.brit[c(3,4)],
-          expand=F) +
-  labs(tag="b)") +
+          expand=F) +  
+  labs(tag="a)") +
+        scale_fill_manual(values=c("50+"="#EA4C3B",
+                                   "50-"="#004616",
+                                   "90+"="#F6A173",
+                                   "90-"="#81C07A"),
+                            labels=c("90+"="90% UD sero+",
+                                     "50+"="50% UD sero+",
+                                     "90-" = "90% UD sero-",
+                                     "50-" = "50% UD sero-"),
+                       #   levels=c("90F","50F","90M","50M"),
+                            name="Serology") +
     annotation_scale(location = "br",
                      width_hint = 0.15,
                      pad_x = unit(0.7, "cm"),
@@ -750,11 +782,15 @@ mycol50sex<-mycolsex
                            which_north = "true",
                            style = ggspatial::north_arrow_nautical(),
                            pad_y = unit(0.8, "cm")) +
-    theme_bw() 
+    theme_bw()+
+      theme(legend.position="bottom")+
+      guides(fill=guide_legend(ncol=2))
+  
+  print(kern.sero23)
 
-   tiff(here::here("outputs","adults_distribution_brb_2023_final.tif"),
+   tiff(here::here("outputs","adults_distribution_brb_2023_final_legend.tif"),
      width=4000,
-     height=2000,
+     height=2500,
      res=500,
      compression="lzw")
 

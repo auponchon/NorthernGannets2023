@@ -142,7 +142,7 @@ land_summary_ind<-function (dataset,colony){
         temp<-subset(dataset,dataset$id==ids[k])
         nb.land<-sort(unique(temp$onlandNb))
         
-        if (length(nb.land)>1){
+        if (length(nb.land)>0){
             for (a in 2:length(nb.land)){
                 tempo<-subset(temp,temp$onlandNb==nb.land[a])
                 
@@ -161,7 +161,7 @@ land_summary_ind<-function (dataset,colony){
                                  DateEnd=tempo$datetime[nrow(tempo)],
                                  site=colony$name)
                 all.land<-rbind(all.land,maxo)
-                
+            
             }
         }
     }
