@@ -456,8 +456,6 @@ dev.off()
 
 # Spatial analysis 2023
 
-(kern.sex23)
-
 ```{r}
 #| echo: false
 #| include: true
@@ -586,7 +584,7 @@ locs.ltr.neg23<-as.ltraj(locs.neg.df23[,c("long","lat")],
 #                     h=7500,
 #                     grid=1000)
 # 
-# BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=1000,meth="BA",percent=90)
+BA.KUD.90<-kerneloverlap(locs.spdf23[,"sero"], grid=500,meth="BA",percent=90)
 # BA.KUD.50<-kerneloverlap(locs.spdf[,"sex"], grid=1000,meth="BA",percent=50)
 
 
