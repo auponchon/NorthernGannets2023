@@ -24,11 +24,11 @@ library(DHARMa)
 library(kableExtra)
 library(plotrix)
 library(readxl)
-library(FactoMineR)
-library(corrr)
-library(corrplot)
-library(factoextra)
-library(ggcorrplot)
+# library(FactoMineR)
+# library(corrr)
+# library(corrplot)
+# library(factoextra)
+# library(ggcorrplot)
 
 source(here("R","trip_functions.R"))
 
@@ -361,8 +361,8 @@ geom_point(alpha=0.4) +
      scale_y_continuous(limits=c(0,400,100),
                         breaks=seq(0,400,100),
                         expand=c(0.001,0.001)) + 
- scale_colour_manual(values=mycol,name="Sex") +
- scale_fill_manual(values=mycol,name="Sex")  +
+ scale_colour_manual(values=mycolsex,name="Sex") +
+ scale_fill_manual(values=mycolsex,name="Sex")  +
      theme_light()+
     theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
@@ -384,8 +384,8 @@ geom_point(alpha=0.4) +
     scale_y_continuous(limits=c(0,200),
                        breaks=seq(0,200,50),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol,name="Sex") +
-    scale_fill_manual(values=mycol,name="Sex")  +
+  scale_colour_manual(values=mycolsex,name="Sex") +
+    scale_fill_manual(values=mycolsex,name="Sex")  +
     theme_light()+
     theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
@@ -408,8 +408,8 @@ geom_point(alpha=0.4) +
     scale_y_continuous(limits=c(0,1200),
                        breaks=seq(0,1200,300),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol,name="Sex") +
-    scale_fill_manual(values=mycol,name="Sex")  +
+  scale_colour_manual(values=mycolsex,name="Sex") +
+    scale_fill_manual(values=mycolsex,name="Sex")  +
     theme_light()+
     theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
@@ -432,8 +432,8 @@ geom_point(alpha=0.4) +
     scale_y_continuous(limits=c(0,60),
                        breaks=seq(0,60,15),
                        expand=c(0.001,0)) +
-  scale_colour_manual(values=mycol,name="Sex") +
-    scale_fill_manual(values=mycol,name="Sex")  +
+  scale_colour_manual(values=mycolsex,name="Sex") +
+    scale_fill_manual(values=mycolsex,name="Sex")  +
     theme_light()+
     theme(panel.grid.minor = element_blank()) 
     

@@ -389,5 +389,3 @@ serol.rouzic<-read_excel(here("data","RawData","data_Rouzic_2023_sexage_AIV.xlsx
 
 return(serol.rouzic)
 }
-
-
