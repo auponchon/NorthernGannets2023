@@ -1,0 +1,398 @@
+---
+title: "7-Spatial analysis 2005-2022"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+# 1- Map of all trips
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+library(here)
+library(tidyverse)
+library(sf)
+library(readxl)
+library(grid)
+library(gridExtra)
+library(viridis)
+library(rnaturalearth)
+library(ggspatial)
+library(adehabitatHR)
+library(terra)
+library(raster)
+library(RColorBrewer)
+
+source(here::here("R","trip_functions.R"))
+source(here::here("R","problem_trips.R"))
+source(here::here("R","spatial_function_KUD.R"))
+
+
+load(here::here("data","NewlyCreatedData","raw_rouzic_05_23.RData"))
+
+#select borders
+target<-c("France","United Kingdom","Spain","Belgium",
+          "Netherlands", "Germany","Ireland","Isle of Man",
+          "Jersey" ,"Guernsey"  ,"Åland")  
+
+coord_rouzic<-colo_coord_rouzic %>% 
+    sf::st_as_sf(., coords = c("long","lat"),crs=wgscrs)  
+  
+
+indi23<-rouz.all %>% 
+    dplyr::filter(year==2023) %>% 
+    dplyr::mutate(Yeux_bino=as.factor(Yeux_bino))
+
+
+ indisf.all<-rouz.all %>%
+     mutate(year=factor(as.factor(year),
+                        levels=c(2023,2022,2019,2017,2016,2015,2014,
+                                 2013,2012, 2011,2010, 2006,2005)) )
+     
+ 
+ #contours of countries
+shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+    dplyr::filter(name %in% target) 
+    
+
+#coastlines
+coast<-ne_coastline(scale = 10, returnclass = "sf")
+
+colinfect<-viridis(n=2,begin=0,end=0.6,option="D")
+
+ #Map of all locations for 2023
+   map.year23<-ggplot()+
+            geom_path(data = indi23,
+            aes(x=long,y=lat,
+                group=year,
+                color=Yeux_bino),
+                 show.legend = T,
+            alpha=0.4) +
+       geom_sf(data=shp,fill="grey90") +
+           geom_sf(data = coord_rouzic,
+            shape=23,
+            colour="black",
+            fill="yellow",
+            size=4) +
+        coord_sf(xlim=c(-9,2),
+             ylim=c(46.8,52.0),
+             expand=F) +
+   scale_colour_manual(values=colinfect,  name="Eye") +
+       labs(x="",y="") +
+     annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+       theme_bw()
+
+   print(map.year23)
+   
+
+ #Map of all locations for all years
+   map.allyears<-ggplot()+
+            geom_path(data = indisf.all,
+            aes(x=long,y=lat,
+                group=year,
+                color=year),
+                 show.legend = T,
+            alpha=0.4) +
+       geom_sf(data=shp,fill="grey90") +
+           geom_sf(data = coord_rouzic,
+            shape=23,
+            colour="black",
+            fill="yellow",
+            size=4) +
+        coord_sf(xlim=c(-9,2),
+             ylim=c(46.8,52.0),
+             expand=F) +
+   scale_colour_manual(values=turbo(13),  name="Year") +
+       labs(x="",y="") +
+     annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+       theme_bw()
+
+ print(map.allyears)
+
+```
+
+# Spatial analysis 2005-2022
+
+```{r}
+
+load(here::here("data","NewlyCreatedData",
+                "clean_2_locs_AD_rouzic2005-2019.RData"))
+load(here::here("data","NewlyCreatedData",
+                "clean_locs_rouzic_2022.RData"))
+
+
+rouz05.19<-cleanLocs.rouzic05.19 %>% 
+    dplyr::select(id,datetime,long,lat,
+                  distmax,distadj,totalpath,difftimemin,travelNb,
+           onlandNb,trip.id) %>% 
+    mutate(year=year(datetime)) 
+
+
+#Identification of trips to exclude (incomplete trips and migration trip) for 2022
+incomplete.2022<-c("222267.1","222267.6","222275.1","222276.1",
+              "222279.8","222279.32","222280.45","222269.17","222270.32","222271.25","222272.24","222273.22","222274.25","222275.28","222276.17","222277.10","222278.1","222279.33","222280.46","222281.7")
+
+
+rouz22<-cleanLocs.rouzic %>% 
+    dplyr::filter(!trip.id %in% incomplete.2022) %>% 
+    dplyr::select(id,datetime,long,lat,
+                  distmax,distadj,totalpath,difftimemin,travelNb,
+           onlandNb,trip.id) %>% 
+     mutate(year=year(datetime)) 
+
+
+rouz.all1<-rbind(rouz05.19,rouz22) 
+
+
+metadata<-read_excel(here::here("data","RawData","metadata_2005-2023.xlsx"),
+              sheet="Feuil1",col_names = T) %>% 
+    dplyr::filter(year!=2023)
+
+rouz.all<-rouz.all1%>% 
+    left_join(.,metadata,by=c("year","id")) %>% 
+    dplyr::mutate(id=as.factor(id),
+                  trip.id=as.factor(trip.id),
+                  sero=as.factor(sero)) %>% 
+    dplyr::arrange(year,id,datetime)
+
+#select locs for 2023
+ind.var<-rouz.all %>% 
+    dplyr::select(id,year,sex,travelNb,trip.id) %>% 
+    group_by(id,year) %>% 
+    slice(1) %>% 
+    ungroup()
+
+#get interpolated data from HMM
+interp.0522<- read_delim(here::here("data","RawData",
+                               "HMM_Rouzic_Morus_bassanus_all_corrected.csv"), 
+                  col_names=T,
+                  delim = ";",
+                  col_types = cols(indID = col_character(), 
+                                    datetime = col_datetime(format = 
+                                                                "%d/%m/%Y %H:%M"),
+                                   longitude=col_number(),
+                                   latitude=col_number()), 
+                   trim_ws = TRUE) %>% 
+    dplyr::rename(long=longitude,lat=latitude) %>% 
+    dplyr::mutate(id=as.factor(indID)) %>% 
+      dplyr::filter(year!=2023) %>% 
+    droplevels(.) %>% 
+  #  left_join(.,ind.var,by=c("id","year")) %>% 
+  
+    as.data.frame(.) 
+
+
+
+#filter and project trips
+
+locs.df0522<-interp.0522 %>%   #cleanLocs.rouzic23 %>% 
+    # dplyr::mutate(sero=sero,
+    #              #  deploy=as.factor(deploy),
+    #               sex=sex) %>% 
+    # dplyr::filter(!trip.id %in% migration & 
+    #                   !trip.id %in% last.incomplete) %>% 
+   # droplevels() %>% 
+      sf::st_as_sf(., coords = c("long","lat")) %>%
+    sf::st_set_crs(4326) %>%
+    st_transform(., projcrs) %>%
+   dplyr::mutate(long = sf::st_coordinates(.)[,1],
+                 lat = sf::st_coordinates(.)[,2]) %>% 
+    as.data.frame(.)
+
+
+locs.spdf0522<-interp.0522 %>%  #cleanLocs.rouzic23 %>% 
+    #  dplyr::mutate(sero=sero,
+    #                #deploy=as.factor(deploy),
+    #                sex=sex) %>% 
+    # dplyr::filter(!trip.id %in% migration & 
+    #                   !trip.id %in% last.incomplete) %>% 
+    # droplevels() %>%
+    sf::st_as_sf(., coords = c("long","lat")) %>%
+    sf::st_set_crs(4326) %>%
+    st_transform(., projcrs) %>%
+    as_Spatial(.)
+
+
+locs.ltr.all<-as.ltraj(locs.df0522[,c("long","lat")], 
+             date=locs.df0522$datetime, 
+             id=locs.df0522$id,
+             typeII = TRUE)
+
+
+##kernels with normal ud
+ BA.KUD.90<-kerneloverlap(locs.spdf0522[,"year"], grid=1000,meth="BA",percent=90)
+ BA.KUD.50<-kerneloverlap(locs.spdf0522[,"year"], grid=1000,meth="BA",percent=50)
+
+##kernels with brb
+TMAX=3600
+LMIN=50
+HMIN=10000
+GRID=500
+
+#get D parameters for BRB function
+Tall<-BRB.D(locs.ltr.all, Tmax = TMAX, Lmin = LMIN)
+
+#BRB function
+
+KUD.all<-get_brb_raster(locs.ltr.all,Tall,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+
+ver.all.90<-st_as_sf(getverticeshr(KUD.all, percent=90),crs = projcrs)
+ver.all.50<-st_as_sf(getverticeshr(KUD.all, percent=50),crs = projcrs)
+
+
+#extent of study area
+ext.brit<-terra::ext(250000,650000,5270000,5650000)
+bathym<-terra::rast(here::here("data",
+                               "RawData",
+                               "shapefiles",
+                               "Bathym_FR_UK.tif")) %>% 
+       terra::project(.,projcrs) %>% 
+       terra::crop(., ext.brit)
+
+bathym[bathym>0]<-0
+ocean.pal <- rev(colorRampPalette(brewer.pal(9,"Blues"))(9))
+zbreaks <- c(-500,-200,-150,-100,-50,-25,0)
+
+
+#select borders
+target<-c("France","United Kingdom","Spain","Belgium",
+          "Netherlands", "Germany","Ireland","Isle of Man",
+          "Jersey" ,"Guernsey"  ,"Åland")
+
+##Plot maps
+#contours of countries
+shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+    dplyr::filter(name %in% target) %>% 
+  st_transform(.,projcrs)  %>% 
+    st_crop(., ext.brit)
+
+#coastlines
+coast<-ne_coastline(scale = 10, returnclass = "sf") %>% 
+  st_transform(.,projcrs)  %>% 
+    st_crop(., ext.brit)
+
+#location of colony
+coord_rouzic<-colo_coord_rouzic %>% 
+    sf::st_as_sf(., coords = c("long","lat")) %>% 
+    sf::st_set_crs(4326) %>% 
+    st_transform(.,projcrs)
+
+
+
+#colors for plot
+mycol90<-viridis(n=2,begin=0.2,end=0.8,option="D")
+mycol50<-viridis(n=2,begin=0,end=0.6,option="D")
+
+
+#plot
+  kern.all<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+    geom_sf(data=ver.all.90, fill="grey50" ,
+                             colour=NA,
+                             alpha=0.7) + 
+      geom_sf(data=ver.all.50, fill="grey10" ,
+                             colour=NA ,
+                             alpha=0.8) +
+     #   geom_path(data=locs.df0522,aes(x=long,y=lat,group=year), alpha=0.2) +
+   geom_sf(data=shp,fill="grey90") +
+  geom_sf(data=coast) +
+ geom_sf(data = coord_rouzic,
+         shape=23,
+         colour="black",
+         fill="yellow",
+         size=4) +
+ coord_sf(xlim=ext.brit[c(1,2)],
+          ylim=ext.brit[c(3,4)],
+          expand=F) +
+  labs(title="Distribution 2005 - 2022") +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw() 
+
+   tiff(here::here("outputs","adults_distribution_kernel_all_05_22_correct.tif"),
+     width=3500,
+     height=3500,
+     res=500,
+     compression="lzw")
+
+print(kern.all)
+
+dev.off()
+
+
+
+#plot
+#   kern.sex<-ggplot()+
+#    # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+#     geom_sf(data=ver.fem.90, fill=mycol2.90[1] ,
+#                              colour=NA,
+#                              alpha=0.2) + 
+#       geom_sf(data=ver.mal.90, fill=mycol2.90[2] ,
+#                              colour=NA ,
+#                              alpha=0.2) +
+#          geom_sf(data=ver.fem.50, fill=mycol2.50[1],
+#                              colour=NA,
+#                              alpha=0.6) +
+#     geom_sf(data=ver.mal.50, fill=mycol2.50[2] ,
+#                              colour=NA ,
+#                              alpha=0.6) +
+# 
+#    geom_sf(data=shp,fill="grey90") +
+#   geom_sf(data=coast) +
+#  geom_sf(data = coord_rouzic,
+#          shape=23,
+#          colour="black",
+#          fill="yellow",
+#          size=4) +
+#  coord_sf(xlim=ext.brit[c(1,2)],
+#           ylim=ext.brit[c(3,4)],
+#           expand=F) +
+#   labs(title="Distribution males vs females") +
+#     annotation_scale(location = "br",
+#                      width_hint = 0.15,
+#                      pad_x = unit(0.7, "cm"),
+#                      bar_cols = "black") +
+#     annotation_north_arrow(location = "br",
+#                            which_north = "true",
+#                            style = ggspatial::north_arrow_nautical(),
+#                            pad_y = unit(0.8, "cm")) +
+#     theme_bw() 
+# 
+#    tiff(here::here("outputs","adults_distribution_kernel_sex_05_22.tif"),
+#      width=3500,
+#      height=3500,
+#      res=500,
+#      compression="lzw")
+# 
+# print(kern.sex)
+# 
+# dev.off()
+
+
+```

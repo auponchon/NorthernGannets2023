@@ -1,0 +1,913 @@
+---
+title: "Analysis 2023 - Manuscript"
+author: "Aurore Ponchon"
+format: html
+editor: visual
+---
+
+# Trip summary for 2023
+
+The first chunk calculates the trips summary and characteristics and produce summary tables as reported in the manuscript
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+library(here)
+library(tidyverse)
+library(gridExtra)
+library(nlme)
+library(emmeans)
+library(DHARMa)
+library(kableExtra)
+library(plotrix)
+library(readxl)
+library(beyonce)
+# library(FactoMineR)
+# library(corrr)
+# library(corrplot)
+# library(factoextra)
+# library(ggcorrplot)
+
+source(here("R","trip_functions.R"))
+
+mycolsex<-c("#F5D000FF","cyan3") #"deepskyblue3"
+mycol2.90<-viridis(n=2,begin=0,end=0.6,option="D")
+mycol2.50<-viridis(n=2,begin=0.1,end=0.7,option="D")
+
+#get trips
+load(here::here("data","NewlyCreatedData","clean_10_locs_AD_rouzic23.RData"))
+trips<-trips_summary_ind(cleanLocs.rouzic23,
+                                  colony=colo_coord_rouzic) %>% 
+    dplyr::mutate(sero=as.factor(sero),
+                   Yeux_colo=as.factor(Yeux_colo), 
+                   Yeux_bino=as.factor(Yeux_bino)) %>% 
+     mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
+       droplevels()
+
+#time in colony between 2 consecutive trips
+load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
+land<-raw_rouzic_2023 %>% 
+    land_summary_ind(.,colony=colo_coord_rouzic) %>% 
+    dplyr::filter(LandDurh > 1 & 
+                    LandDurh < 100 & 
+                      stage=="adult") %>% 
+     dplyr::mutate(sero=as.factor(sero),
+                   Yeux_colo=as.factor(Yeux_colo), 
+                   Yeux_bino=as.factor(Yeux_bino)) %>% 
+     mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
+      droplevels()
+
+##test to include body condition but not conclusive
+# #get the 4 numerical variables which are used as proxies of body condition 
+# mat<-trips %>% 
+#     dplyr::distinct(id,body_weight,wing, culmen,tarsus, .keep_all = F) %>% 
+#     dplyr::select(-id) %>% 
+#     scale(.)
+# 
+# #check correlation between variables
+# corr_matrix <- cor(mat)
+# corrplot(corr_matrix, method="number")
+# 
+# #pca to calculate a body condition index
+# data.pca <- princomp(mat)
+# summary(data.pca)
+# fviz_pca_var(data.pca, col.var = "cos2",
+#             gradient.cols = c("black", "orange", "green"),
+#             repel = TRUE)
+# 
+# #extract pca results
+# cond<-get_pca_ind(data.pca)
+# 
+# #extract the axis 1 values
+# IDS<-trips %>% 
+#       dplyr::distinct(id,body_weight,wing, culmen, .keep_all = F) %>% 
+#     dplyr::mutate(body_cond=cond$coord[,1])
+# 
+# #merge body condition index with rest of data
+# trips.cond<-trips %>% 
+#     left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
+# lands.cond<-lands %>% 
+#     left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
+
+
+
+#Table summary for sample sizes on individuals and trips
+sum.ids<-trips %>% 
+    group_by(Yeux_bino) %>% 
+    summarize(Ids=length(unique(id)),
+              Trips=length(unique(trip.id)),
+              Debut=min(DateEnd),
+              Fin=max(DateEnd)) 
+  
+kbl(sum.ids,caption="Sample size for trips") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+#summary by individuals
+nb.trips.sum<-trips %>% 
+    group_by(Yeux_bino,id) %>% 
+    summarize(Trips=mean(difftime(max(DateEnd),min(DateStart),units="days"))) %>% 
+    summarize(cc=mean(Trips),
+              SE=std.error(Trips),
+              Min=min(Trips),
+              Max=max(Trips))
+
+#count number of trips per individuals
+nb.trips<-trips %>% 
+     group_by(id, Yeux_bino) %>% 
+     count() %>% 
+     group_by(Yeux_bino) %>% 
+     summarize(Min=min(n),
+               Max=max(n))
+
+#calculate mean and sd aby individuals
+sum.id<- trips %>% 
+    group_by(id,Yeux_bino) %>% 
+    summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
+                     ~ mean(.x, na.rm = TRUE))) %>% 
+    as.data.frame()
+
+#calculate mean and se for each iris colour group
+sum.trips1<- sum.id %>% 
+    group_by(Yeux_bino) %>% 
+    summarize(across(where(is.numeric), 
+                     list(Mean=mean,
+                          SE=plotrix::std.error,
+                          Min=min,
+                          Max=max))) %>% 
+    mutate(across(where(is.numeric), round,digits=1))
+
+#format table
+sum.trips<-sum.trips1 %>% 
+    group_by(Yeux_bino) %>% 
+           dplyr::mutate(MeanDist=paste(Distmaxkm_Mean,Distmaxkm_SE,sep=" ± "),
+                         DistRange=paste(Distmaxkm_Min,Distmaxkm_Max,sep=" - "),
+                         MeanDur=paste(TripDurh_Mean,TripDurh_SE,sep=" ± "),
+                         DurRange=paste(TripDurh_Min,TripDurh_Max,sep=" - "),     
+                         MeanPath=paste(TotalPathkm_Mean,TotalPathkm_SE,sep=" ± "),
+                      PathRange=paste(TotalPathkm_Min,TotalPathkm_Max,sep=" - ")) %>%
+        dplyr::select(-c(2:13))
+
+#summarize data for nest attendance
+lands.ids<-land %>% 
+    summarize(Ids=length(unique(id)),
+              Land=length(unique(onland.id)),
+              Debut=min(DateEnd),
+              Fin=max(DateEnd))
+
+kbl(lands.ids,caption="Sample size for periods on land") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+#summary by individuals
+land.id<- land %>% 
+    group_by(Yeux_bino,id) %>% 
+    summarize(Time= mean(LandDurh, na.rm=T)) %>% 
+    as.data.frame()
+
+#summary by iris colour
+sum.lands<- land.id %>% 
+    group_by(Yeux_bino) %>% 
+    summarize(across(where(is.numeric), 
+                     list(mean=mean,
+                          se=plotrix::std.error))) %>% 
+    mutate(across(where(is.numeric), round,digits=1)) 
+
+#clean table for trips
+kbl(sum.trips,caption="Summary of trip characteristics",
+    col.names=c("Yeux",
+                "Maximal distance (km)",
+                "Maximal distance (km)",
+                "Trip Duration (h)",
+                "Trip Duration (h)",
+                "Total path (km)",
+                "Total path (km)")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+#clean table for nest attendance
+kbl(sum.lands,caption="Summary of nest attendance",
+    col.names=c("Yeux","DurationMean","DurationSE")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+#calculate mean and se for each group of iris colour
+dist.colo<-summarySE(trips, measurevar="Distmaxkm", groupvars=c("Yeux_colo")) %>% 
+    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+                                            "1dark1spotted",
+                                            "1dark",
+                                            "2spotted",
+                                            "1spotted",
+                                            "white"))
+dur.colo<-summarySE(trips, measurevar="TripDurh", groupvars=c("Yeux_colo"))%>% 
+    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+                                            "1dark1spotted",
+                                            "1dark",
+                                            "2spotted",
+                                            "1spotted",
+                                            "white"))
+path.colo<-summarySE(trips, measurevar="TotalPathkm", groupvars=c("Yeux_colo"))%>% 
+    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+                                            "1dark1spotted",
+                                            "1dark",
+                                            "2spotted",
+                                            "1spotted",
+                                            "white"))
+land.colo<-summarySE(land, measurevar="LandDurh", groupvars=c("Yeux_colo"))%>% 
+    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+                                            "1dark1spotted",
+                                            "1dark",
+                                            "2spotted",
+                                            "1spotted",
+                                            "white"))
+
+#plot mean and ci of trip characteristics for each iris colour group
+col<-beyonce_palette(18)
+
+eyecolordist<-ggplot(dist.colo, aes(x=Yeux_colof, y=Distmaxkm),group=Yeux_colof) +
+    geom_point(aes(color=Yeux_colof)) + 
+     geom_errorbar(aes(x=Yeux_colof,
+                      ymin=Distmaxkm-ci,
+                      ymax=Distmaxkm+ci,
+                      colour=Yeux_colof),
+                  width = 0) +
+    scale_y_continuous(limits=c(0,200),
+                       expand=c(0.001,0.001))+
+    scale_color_manual(values=col, name="Iris colour") +
+      labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+    theme_bw()
+
+eyecolordur<-ggplot(dur.colo, aes(x=Yeux_colof, y=TripDurh),group=Yeux_colof) +
+     geom_point(aes(color=Yeux_colof)) + 
+     geom_errorbar(aes(x=Yeux_colof,
+                      ymin=TripDurh-ci,
+                      ymax=TripDurh+ci,
+                      colour=Yeux_colof),
+                  width = 0) +
+    scale_y_continuous(limits=c(0,60),
+                       expand=c(0.001,0.001)) +
+    scale_color_manual(values=col, name="Iris colour") +
+      labs(y="Trip duration (h)",tag="b)",x="") +
+    theme_bw()
+
+eyecolorpath<-ggplot(path.colo, aes(x=Yeux_colof, y=TotalPathkm),group=Yeux_colof) +
+     geom_point(aes(color=Yeux_colof)) + 
+     geom_errorbar(aes(x=Yeux_colof,
+                      ymin=TotalPathkm-ci,
+                      ymax=TotalPathkm+ci,
+                      colour=Yeux_colof),
+                  width = 0) +
+    scale_y_continuous(limits=c(0,600),
+                       expand=c(0.001,0.001)) +
+    scale_color_manual(values=col, name="Iris colour") +
+      labs(y="Total distance travelled (km)",tag="c)",x="") +
+    theme_bw()
+
+eyecolorland<-ggplot(land.colo, aes(x=Yeux_colof, y=LandDurh),group=Yeux_colof) +
+     geom_point(aes(color=Yeux_colof)) + 
+     geom_errorbar(aes(x=Yeux_colof,
+                      ymin=LandDurh-ci,
+                      ymax=LandDurh+ci,
+                      colour=Yeux_colof),
+                  width = 0) +
+    scale_y_continuous(limits=c(0,30),
+                       expand=c(0.001,0.001)) +
+    scale_color_manual(values=col, name="Iris colour") +
+      labs(y="Nest attendance (h)",tag="a)",x="") +
+    theme_bw()
+
+mylegendcoloreye<-g_legend(eyecolordist)
+
+#Figure which is not presented in the study
+tiff(here::here("outputs","trips_by_iris_colour.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+
+grid.arrange(arrangeGrob(eyecolordist+ theme(legend.position="none"),
+                         eyecolordur+ theme(legend.position="none"),
+                         eyecolorpath+ theme(legend.position="none"),
+                         eyecolorland+ theme(legend.position="none") ,
+                                     ncol=2),
+               mylegendcoloreye, ncol=2,widths=c(1,0.1)) 
+dev.off()
+```
+
+# Statistical analysis 2023
+
+Linear mixed models applied on trip characteristics. Sex, iris colour and their interaction as well as day of the year were tested as fixed effect while bird ID was used as a random effect.
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+source(here::here("R","stats_functions.R"))
+var<-c('day','sex','Yeux_bino')
+
+
+#daysx<-c("03/07","20/08","30/08","09/09","19/09","29/09","20/10")
+newdat<-expand.grid(site=unique(trips$site),
+                    day=seq(min(trips$day),
+                            max(trips$day),1),
+                    Yeux_bino=unique(trips$Yeux_bino),
+                    sex=unique(trips$sex))
+
+newdatland<-expand.grid(site=unique(trips$site),
+                    day=seq(min(trips$day),
+                            max(trips$day),1),
+                    Yeux_bino=unique(trips$Yeux_bino),
+                    sex=unique(trips$sex))
+
+
+glm.dist1<-lme(sqrt(Distmaxkm) ~ day + sex*Yeux_bino ,
+              random= ~1| id,
+              data=trips)
+
+glm.dist2<-lme(sqrt(Distmaxkm) ~ day + sex+Yeux_bino,
+              random= ~1| id,
+              data=trips)
+
+glm.dist3<-lme(sqrt(Distmaxkm) ~ day + sex + Yeux_bino,
+              random= ~1| id,
+              data=trips)
+
+glm.dist4<-lme(sqrt(Distmaxkm) ~ day + sex ,
+              random= ~1| id,
+              data=trips)
+
+AIC(glm.dist1,glm.dist2,glm.dist3,glm.dist4)
+
+
+summary(glm.dist1)
+anova(glm.dist1)
+
+qqnorm(resid(glm.dist1))
+qqline(resid(glm.dist1))
+
+
+glm.dur1<-lme(sqrt(TripDurh) ~ day + sex*Yeux_bino ,
+              random= ~1| id,
+              data=trips)
+
+glm.dur2<-lme(sqrt(TripDurh) ~ day + sex+Yeux_bino,
+              random= ~1| id,
+              data=trips)
+
+glm.dur3<-lme(sqrt(TripDurh) ~ day + sex + Yeux_bino,
+              random= ~1| id,
+              data=trips)
+
+glm.dur4<-lme(sqrt(TripDurh) ~ day + sex ,
+              random= ~1| id,
+              data=trips)
+
+AIC(glm.dur1,glm.dur2,glm.dur3,glm.dur4)
+
+summary(glm.dur1)
+anova(glm.dur1)
+
+qqnorm(resid(glm.dur1))
+qqline(resid(glm.dur1))
+
+
+##stats for total path
+glm.path1<-lme(sqrt(TotalPathkm) ~ day + sex*Yeux_bino ,
+              random= ~1| id,
+              data=trips)
+
+glm.path2<-lme(sqrt(TotalPathkm) ~ day + sex+Yeux_colo,
+              random= ~1| id,
+              data=trips)
+
+glm.path3<-lme(sqrt(TotalPathkm) ~ day + sex + Yeux_bino,
+              random= ~1| id,
+              data=trips)
+
+glm.path4<-lme(sqrt(TotalPathkm) ~ day + sex ,
+              random= ~1| id,
+              data=trips)
+
+AIC(glm.path1,glm.path2,glm.path3,glm.path4)
+
+summary(glm.path1)
+anova(glm.path1)
+
+qqnorm(resid(glm.path1))
+qqline(resid(glm.path1))
+
+##stats for time on land
+glm.land1<-lme(sqrt(LandDurh)~ day + sex*Yeux_bino,
+              random= ~1| id,
+              data=land)
+
+glm.land2<-lme(sqrt(LandDurh)~ day + sex+Yeux_bino,
+              random= ~1| id,
+              data=land)
+
+glm.land3<-lme(sqrt(LandDurh)~ day + sex + Yeux_bino,
+              random= ~1| id,
+              data=land)
+
+glm.land4<-lme(sqrt(LandDurh)~ day + sex,
+              random= ~1| id,
+              data=land)
+
+glm.land5<-lme(sqrt(LandDurh)~ day ,
+              random= ~1| id,
+              data=land)
+
+AIC(glm.land1,glm.land2,glm.land3,glm.land4,glm.land5)
+
+
+summary(glm.land1)
+anova(glm.land1)
+
+qqnorm(resid(glm.land1))
+qqline(resid(glm.land1))
+
+
+#predict fitted values and CI
+var<-c('day','sex','Yeux_bino')
+
+
+predist<-predict_lme_results(glm.dist1,newdat,var)
+preddur<-predict_lme_results(glm.dur1,newdat,var)
+predpath<-predict_lme_results(glm.path1,newdat,var)
+predland<-predict_lme_results(glm.land1,newdatland,var)
+
+mycolinterac<-c("#EF7C12FF","#F5D000FF","#1BB6AFFF","#172869FF")
+
+distlmmsex<-ggplot(trips, aes(x=day, y=Distmaxkm ,colour=sex:Yeux_bino)) + 
+    geom_ribbon(data= data.frame(predist),
+            aes(ymin= lower.CL^2, ymax= upper.CL^2,
+                y= NULL,
+                fill=sex:Yeux_bino),
+           alpha=0.4,colour = NA) +
+geom_point(alpha=0.4) +
+ geom_line(data=predist,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
+    scale_x_continuous(limits=c(0,110),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
+     scale_y_continuous(limits=c(0,400,100),
+                        breaks=seq(0,400,100),
+                        expand=c(0.001,0.001)) + 
+ scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+ scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+     theme_light()+
+    theme(#legend.position="none",
+          panel.grid.minor = element_blank()) 
+print(distlmmsex)
+
+durlmmsex<-ggplot(trips, aes(x=day, y=TripDurh ,colour=sex:Yeux_bino)) + 
+    geom_ribbon(data= data.frame(preddur), 
+            aes(ymin= lower.CL^2, ymax= upper.CL^2, 
+                y= NULL,
+                fill=sex:Yeux_bino), 
+            alpha=0.4,colour = NA) +
+geom_point(alpha=0.4) +
+ geom_line(data=preddur,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Trip Duration (h)",tag="b)",x="") +
+    scale_x_continuous(limits=c(0,110),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
+    scale_y_continuous(limits=c(0,200),
+                       breaks=seq(0,200,50),
+                       expand=c(0.001,0)) +
+ scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+ scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+    theme_light()+
+    theme(#legend.position="none",
+          panel.grid.minor = element_blank()) 
+    
+
+pathlmmsex<-ggplot(trips, aes(x=day, y=TotalPathkm ,colour=sex:Yeux_bino)) + 
+    geom_ribbon(data= data.frame(predpath), 
+            aes(ymin= lower.CL^2, ymax= upper.CL^2, 
+                y= NULL,
+                fill=sex:Yeux_bino), 
+            alpha=0.4,colour = NA) +
+geom_point(alpha=0.4) +
+ geom_line(data=predpath,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Total distance travelled (km)",tag="c)",x="") +
+    scale_x_continuous(limits=c(0,110),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
+    scale_y_continuous(limits=c(0,1200),
+                       breaks=seq(0,1200,300),
+                       expand=c(0.001,0)) +
+ scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+ scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+    theme_light()+
+    theme(#legend.position="none",
+          panel.grid.minor = element_blank()) 
+    
+
+landlmmsex<-ggplot(land, aes(x=day, y=LandDurh ,colour=sex:Yeux_bino)) + 
+    geom_ribbon(data= data.frame(predland), 
+            aes(ymin= lower.CL^2, ymax= upper.CL^2, 
+                y= NULL,
+                fill=sex:Yeux_bino), 
+            alpha=0.4,colour = NA) +
+geom_point(alpha=0.4) +
+ geom_line(data=predland,aes(x=day,y=emmean^2),lwd=1.5) +
+     labs(y="Nest attendance (h)",tag="d)",x="") +
+    scale_x_continuous(limits=c(0,110),
+                     #  labels=daysx,
+                       breaks=seq(0,120,20),
+                       expand=c(0.001,0.001),
+                     labels=c("02/07","22/07","11/08","31/08","20/09","10/10","30/10")) +
+    scale_y_continuous(limits=c(0,60),
+                       breaks=seq(0,60,15),
+                       expand=c(0.001,0)) +
+ scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+ scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+    theme_light()+
+    theme(panel.grid.minor = element_blank()) 
+    
+mylegendlmmsero<-g_legend(distlmmsex)
+
+tiff(here::here("outputs","Final figures","LMM_predictions_interac_2023.tif"),
+     width=7000,
+     height=4000,
+     res=600,
+     compression="lzw")
+grid.arrange(arrangeGrob(distlmmsex+ theme(legend.position="none"),
+                         durlmmsex+ theme(legend.position="none"),
+                         pathlmmsex+ theme(legend.position="none"),
+                         landlmmsex+ theme(legend.position="none") ,
+                                     ncol=2),
+               mylegendlmmsero, ncol=2,widths=c(1,0.1)) 
+
+dev.off()
+```
+
+# Spatial analysis 2023
+
+Calculate kernel UD according to sex and iris colour separately, as interaction is not significant.
+
+```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
+
+library(sf)
+library(adehabitatHR)
+library(rnaturalearth)
+library(terra)
+library(raster)
+library(ggspatial)
+library(RColorBrewer)
+
+
+source(here::here("R","trip_functions.R"))
+source(here::here("R","problem_trips.R"))
+source(here::here("R","spatial_function_KUD.R"))
+
+#select locs for 2023
+ind.var<-cleanLocs.rouzic23 %>% 
+    dplyr::select(id,year,stage,period,sex,
+                  age_chick,sero,Yeux_bino,travelNb,trip.id) %>% 
+    group_by(id,year) %>% 
+    slice(1) %>% 
+    dplyr::filter(year==2023) %>% 
+    droplevels() %>% 
+    ungroup()
+
+#get interpolated data from HMM
+interp.23<- read_delim(here::here("data","RawData",
+                               "HMM_Rouzic_Morus_bassanus_all_corrected.csv"), 
+                  col_names=T,
+                  delim = ";",
+                  col_types = cols(indID = col_character(), 
+                                    datetime = col_datetime(format = 
+                                                                "%d/%m/%Y %H:%M"),
+                                   longitude=col_number(),
+                                   latitude=col_number()), 
+                   trim_ws = TRUE) %>% 
+    dplyr::rename(long=longitude,lat=latitude) %>% 
+    dplyr::mutate(id=as.factor(str_sub(indID,-6,-1))) %>% 
+    left_join(.,ind.var,by=c("id","year")) %>% 
+    dplyr::filter(year==2023) %>% 
+    droplevels() %>% 
+    as.data.frame(.) 
+
+
+#filter and project trips
+
+locs.df23<-interp.23 %>%   #cleanLocs.rouzic23 %>% 
+    dplyr::filter(!trip.id %in% migration & 
+                      !trip.id %in% last.incomplete) %>% 
+    droplevels() %>% 
+      sf::st_as_sf(., coords = c("long","lat")) %>%
+    sf::st_set_crs(4326) %>%
+    st_transform(., projcrs) %>%
+   dplyr::mutate(long = sf::st_coordinates(.)[,1],
+                 lat = sf::st_coordinates(.)[,2]) %>% 
+    as.data.frame(.)
+
+
+locs.spdf23<-interp.23 %>%  #cleanLocs.rouzic23 %>% 
+    dplyr::filter(!trip.id %in% migration & 
+                      !trip.id %in% last.incomplete) %>% 
+    droplevels() %>%
+    sf::st_as_sf(., coords = c("long","lat")) %>%
+    sf::st_set_crs(4326) %>%
+    st_transform(., projcrs) %>%
+    as_Spatial(.)
+
+#rm(cleanLocs.rouzic23)
+
+#load bathymetry layer
+
+
+#get reduced dataframes 
+locs.fem.df23<-get_df_filtered(locs.df23,sex,"F") 
+locs.mal.df23<-get_df_filtered(locs.df23,sex,"M") 
+
+locs.pos.df23<-get_df_filtered(locs.df23,Yeux_bino,"1") 
+locs.neg.df23<-get_df_filtered(locs.df23,Yeux_bino,"0") 
+
+#get dataframes as ltraj for brb function by sex
+locs.ltr.fem23<-as.ltraj(locs.fem.df23[,c("long","lat")], 
+             date=locs.fem.df23$datetime, 
+             id=locs.fem.df23$id,
+             typeII = TRUE)
+
+locs.ltr.mal23<-as.ltraj(locs.mal.df23[,c("long","lat")], 
+             date=locs.mal.df23$datetime, 
+             id=locs.mal.df23$id,
+             typeII = TRUE)
+
+#get dataframes as ltraj for brb function by iris colour
+locs.ltr.pos23<-as.ltraj(locs.pos.df23[,c("long","lat")], 
+             date=locs.pos.df23$datetime, 
+             id=locs.pos.df23$id,
+             typeII = TRUE)
+
+locs.ltr.neg23<-as.ltraj(locs.neg.df23[,c("long","lat")], 
+             date=locs.neg.df23$datetime, 
+             id=locs.neg.df23$id,
+             typeII = TRUE)
+
+
+
+##kernels with normal ud
+
+# locs.fem.spdf<-subset(locs.spdf , locs.spdf$sex=="F") 
+# locs.mal.spdf<-subset(locs.spdf , locs.spdf$sex=="M") 
+# KUD.sero.mal<- kernelUD(locs.mal.spdf,
+#                     same4all=T,
+#                     h=7500,
+#                     grid=1000)
+# 
+# KUD.sero.fem<- kernelUD(locs.fem.spdf,
+#                     same4all=T,
+#                     h=7500,
+#                     grid=1000)
+# 
+BA.KUD.90<-kerneloverlap(locs.spdf23[,"Yeux_bino"], grid=500,meth="BA",percent=90)
+BA.KUD.50<-kerneloverlap(locs.spdf23[,"Yeux_bino"], grid=500,meth="BA",percent=50)
+print("Yeux 50 ")
+BA.KUD.50
+print("Yeux 90")
+BA.KUD.90
+
+BA.KUD.90<-kerneloverlap(locs.spdf23[,"sex"], grid=500,meth="BA",percent=90)
+BA.KUD.50<-kerneloverlap(locs.spdf23[,"sex"], grid=500,meth="BA",percent=50)
+print("Sex 50 ")
+      BA.KUD.50
+print("Sex 90 ")
+      BA.KUD.90
+
+
+##kernels with brb
+TMAX=3600
+LMIN=50
+HMIN=10000
+GRID=500
+
+#get D parameters for BRB function
+Tmal23<-BRB.D(locs.ltr.mal23, Tmax = TMAX, Lmin = LMIN)
+Tfem23<-BRB.D(locs.ltr.fem23, Tmax = TMAX, Lmin = LMIN)
+Tpos23<-BRB.D(locs.ltr.pos23, Tmax = TMAX, Lmin = LMIN)
+Tneg23<-BRB.D(locs.ltr.neg23, Tmax = TMAX, Lmin = LMIN)
+
+
+#BRB function
+KUD.mal23<-get_brb_raster(locs.ltr.mal23,Tmal23,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+KUD.fem23<-get_brb_raster(locs.ltr.fem23,Tfem23,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+
+KUD.pos23<-get_brb_raster(locs.ltr.pos23,Tpos23,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+KUD.neg23<-get_brb_raster(locs.ltr.neg23,Tneg23,
+                        TMAX,LMIN,
+                        HMIN,GRID)
+
+ver.mal23.90<-st_as_sf(getverticeshr(KUD.mal23, percent=90),crs = projcrs) %>% 
+    mutate(Sex="90M")
+ver.mal23.50<-st_as_sf(getverticeshr(KUD.mal23, percent=50),crs = projcrs)%>% 
+    mutate(Sex="50M")
+ver.fem23.90<-st_as_sf(getverticeshr(KUD.fem23, percent=90),crs = projcrs)%>% 
+    mutate(Sex="90F")
+ver.fem23.50<-st_as_sf(getverticeshr(KUD.fem23, percent=50),crs = projcrs)%>% 
+    mutate(Sex="50F")
+
+
+ver.pos23.90<-st_as_sf(getverticeshr(KUD.pos23, percent=90),crs = projcrs)%>% 
+    mutate(Sero="90+")
+ver.pos23.50<-st_as_sf(getverticeshr(KUD.pos23, percent=50),crs = projcrs)%>% 
+    mutate(Sero="50+")
+ver.neg23.90<-st_as_sf(getverticeshr(KUD.neg23, percent=90),crs = projcrs)%>% 
+    mutate(Sero="90-")
+ver.neg23.50<-st_as_sf(getverticeshr(KUD.neg23, percent=50),crs = projcrs)%>% 
+    mutate(Sero="50-")
+
+#BA.KUD.90<-kerneloverlap(locs.spdf[,"sex"], grid=GRID,meth="BA",percent=90)
+
+
+#extent of study area
+    ext.brit<-terra::ext(300000,650000,5270000,5650000)
+    
+    bathym<-terra::rast(here::here("data",
+                                   "RawData",
+                                   "shapefiles",
+                                   "Bathym_FR_UK.tif")) %>% 
+        terra::project(.,projcrs) %>% 
+        terra::crop(., ext.brit)
+    
+    bathym[bathym>0]<-0
+    ocean.pal <- rev(colorRampPalette(brewer.pal(9,"Blues"))(9))
+    zbreaks <- c(-500,-200,-150,-100,-50,-25,0)
+    
+    
+    #select borders
+    target<-c("France","United Kingdom","Spain","Belgium",
+              "Netherlands", "Germany","Ireland","Isle of Man",
+              "Jersey" ,"Guernsey"  ,"Åland")
+    
+    ##Plot maps
+    #contours of countries
+    shp<-ne_countries(scale = 10, returnclass = 'sf') %>%
+        dplyr::filter(name %in% target) %>% 
+        st_transform(.,projcrs)  %>% 
+        st_crop(., ext.brit)
+    
+    #coastlines
+    coast<-ne_coastline(scale = 10, returnclass = "sf") %>% 
+        st_transform(.,projcrs)  %>% 
+        st_crop(., ext.brit)
+    
+    #location of colony
+    coord_rouzic<-colo_coord_rouzic %>% 
+        sf::st_as_sf(., coords = c("long","lat")) %>% 
+        sf::st_set_crs(4326) %>% 
+        st_transform(.,projcrs)
+    
+
+#colors for plot
+mycolsero<-c("#ED9C97FF","#E1595CFF","#81C07A", "#004616")
+mycolsex<-c("darkorchid1","darkorchid4","#60EFFF","#0093AF") 
+
+
+#plot
+kern.sex23<-ggplot()+
+        # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+        geom_sf(data=ver.fem23.90, aes(fill=Sex) , 
+                colour=NA,
+                alpha=0.2) + 
+        geom_sf(data=ver.fem23.50, aes(fill=Sex) , #fill=mycolsex[2],
+                colour=NA ,
+                alpha=0.7) +
+        geom_sf(data=ver.mal23.90, aes(fill=Sex), #fill=mycolsex[3],
+                colour=NA,
+                alpha=0.5) +
+        geom_sf(data=ver.mal23.50, aes(fill=Sex) , #fill=mycolsex[1],
+                colour=NA ,
+                alpha=0.7) +
+        geom_sf(data=shp,fill="grey90") +
+        geom_sf(data=coast) +
+        geom_sf(data = coord_rouzic,
+                shape=23,
+                colour="black",
+                fill="yellow",
+                size=4) +
+        coord_sf(xlim=ext.brit[c(1,2)],
+                 ylim=ext.brit[c(3,4)],
+                 expand=F) +
+        labs(tag="b)") +
+        scale_fill_manual(values=c("50F"="darkorchid4",
+                                   "50M"="#0093AF",
+                                   "90F"="darkorchid1",
+                                   "90M"="#60EFFF"),
+                            labels=c("90F"="90% UD female",
+                                     "50F"="50% UD female",
+                                     "90M" = "90% UD male",
+                                     "50M" = "50% UD male"),
+                       #   levels=c("90F","50F","90M","50M"),
+                            name="Sex") +
+        annotation_scale(location = "br",
+                         width_hint = 0.15,
+                         pad_x = unit(0.7, "cm"),
+                         bar_cols = "black") +
+        annotation_north_arrow(location = "br",
+                               which_north = "true",
+                               style = ggspatial::north_arrow_nautical(),
+                               pad_y = unit(0.8, "cm")) +
+        theme_bw() +
+      theme(legend.position="bottom")+
+      guides(fill=guide_legend(ncol=2))
+   
+  
+print(kern.sex23)
+
+
+
+#plot
+  kern.sero23<-ggplot()+
+   # tidyterra::geom_spatraster(data = bathym, aes(fill =  Bathym_FR_UK)) +
+     geom_sf(data=ver.pos23.90, aes(fill=Sero) , 
+                colour=NA,
+                alpha=0.4) + 
+        geom_sf(data=ver.pos23.50, aes(fill=Sero) , #fill=mycolsex[2],
+                colour=NA ,
+                alpha=0.7) +
+        geom_sf(data=ver.neg23.90, aes(fill=Sero), #fill=mycolsex[3],
+                colour=NA,
+                alpha=0.4) +
+        geom_sf(data=ver.neg23.50, aes(fill=Sero) , #fill=mycolsex[1],
+                colour=NA ,
+                alpha=0.5) +
+   geom_sf(data=shp,fill="grey90") +
+  geom_sf(data=coast) +
+ geom_sf(data = coord_rouzic,
+         shape=23,                   
+         colour="black",
+         fill="yellow",
+         size=4) +
+ coord_sf(xlim=ext.brit[c(1,2)],
+          ylim=ext.brit[c(3,4)],
+          expand=F) +  
+  labs(tag="a)") +
+        scale_fill_manual(values=c("50+"="#E1595CFF",
+                                   "50-"="#004616",
+                                   "90+"="#ED9C97FF",
+                                   "90-"="#81C07A"),
+                            labels=c("90+"="90% UD black",
+                                     "50+"="50% UD black",
+                                     "90-" = "90% UD white",
+                                     "50-" = "50% UD white"),
+                       #   levels=c("90F","50F","90M","50M"),
+                            name="Iris\ncolour") +
+    annotation_scale(location = "br",
+                     width_hint = 0.15,
+                     pad_x = unit(0.7, "cm"),
+                     bar_cols = "black") +
+    annotation_north_arrow(location = "br",
+                           which_north = "true",
+                           style = ggspatial::north_arrow_nautical(),
+                           pad_y = unit(0.8, "cm")) +
+    theme_bw()+
+      theme(legend.position="bottom")+
+      guides(fill=guide_legend(ncol=2))
+  
+  print(kern.sero23)
+
+   tiff(here::here("outputs","Final figures",
+                   "adults_distribution_brb_2023_final_legend.tif"),
+     width=4000,
+     height=2500,
+     res=500,
+     compression="lzw")
+
+grid.arrange(kern.sero23,kern.sex23,ncol=2,nrow=1)
+
+dev.off()
+
+
+```
+
+# 

@@ -30,7 +30,7 @@ source(here::here("R","trip_functions.R"))
 
 # 1-Importing tracking data
 
-Data deposited on movebank.com. An account is required to access and download the data.
+Data are deposited on movebank.com. An account is required to access and download the data.
 
 ```{r}
 #| echo: false
@@ -87,17 +87,27 @@ all_rouzic<-move.rouzic@data %>%
 
 # 2-Importing individual data
 
-Individual data (sex, date of equipment, breeding stage, period, serological status etc...) are stored in a separate file
+Individual data (sex, date of equipment, breeding stage, period, serological status, iris colour etc...) are stored in a separate file. Both jueveniles and breeding aduts are part of the dataset.
 
 ```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
 serol.rouzic<-get_serol_data_2023()
 ```
 
 # 3- Classifying individual at-sea trips
 
-Locations are classified in consecutive trips at-sea when the birds leave the colony further than 1km away from the colony and for more than 1h. Some preliminary plots are used to identify the duration of time gaps.
+Locations are classified in consecutive trips at-sea when the birds leave the colony further than 1km away from the colony and for more than 1h. Preliminary plots are used to identify the duration of time gaps.
 
 ```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
 all_rouzic23<-all_rouzic %>% 
               dplyr::filter(year==2023) %>% 
               droplevels() %>% 
@@ -231,6 +241,7 @@ grid.arrange(distraw,diffraw, ncol=2,
 #   
 # }
 
+#create shapefiles
 SPDF <-st_as_sf(raw_rouzic_2023,
          coords = c("long", "lat"), 
         crs = 4326)
@@ -249,6 +260,10 @@ SPDF <-st_as_sf(raw_rouzic_2023,
 Calculation of at-sea trip characteristics and periods on land
 
 ```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
 
 load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
 ids<-unique(levels(raw_rouzic_2023$id))
@@ -323,9 +338,15 @@ grid.arrange(dist,dur,correl, land, ncol=2, nrow=2,
 # 5- Filtering complete trips
 
 ```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
 
 max.gap<-10
 
+#filter trips based on defined threshold
 clean.trip.ad.nb23<-raw_trips_rouzic23 %>%
      dplyr::filter(TripDurh > dur.thres & 
                        nlocs >= row.thres & 
@@ -339,7 +360,7 @@ incomp<-raw_rouzic_2023 %>%
     summarize(Max=max(datetime), Dist=dplyr::last(distmax)) %>% 
     dplyr::filter(Dist>1) 
 
-
+#clean trips
 cleanLocs.rouzic23<-raw_rouzic_2023 %>%
     dplyr::filter(trip.id %in% 
                       clean.trip.ad.nb23$trip.id) %>% 
@@ -350,7 +371,7 @@ save(cleanLocs.rouzic23,
      file=here::here("data","NewlyCreatedData",
                paste0("clean_",max.gap,"_locs_AD_rouzic23.Rdata")))
 
-
+#save as shapefiles
 SPDF <-st_as_sf(cleanLocs.rouzic23,
          coords = c("long", "lat"), 
         crs = 4326)
@@ -367,6 +388,11 @@ SPDF <-st_as_sf(cleanLocs.rouzic23,
 # 6- Interpolation
 
 ```{r}
+#| echo: false
+#| include: true
+#| warning: false
+#| message: false
+
 
 load(here("data","NewlyCreatedData",
           paste0("clean_",max.gap,"_locs_AD_rouzic23.Rdata")))
@@ -393,7 +419,7 @@ SPDF <-st_as_sf(loc.clean.interp.rouzic23,
           driver="ESRI Shapefile",
           delete_layer =T)
  
-
+#generate maps for each individuals based on interpolated data
 #  ids<-unique(loc.clean.interp.rouzic23$id)
 # #
 #  for (a in 1:length(ids)){
