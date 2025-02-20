@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Aurore Ponchon">
+
+<title>4-Comparison all trips 2005-2023</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="4-Comparison all trips 2005-2023_files/libs/clipboard/clipboard.min.js"></script>
+<script src="4-Comparison all trips 2005-2023_files/libs/quarto-html/quarto.js"></script>
+<script src="4-Comparison all trips 2005-2023_files/libs/quarto-html/popper.min.js"></script>
+<script src="4-Comparison all trips 2005-2023_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="4-Comparison all trips 2005-2023_files/libs/quarto-html/anchor.min.js"></script>
+<link href="4-Comparison all trips 2005-2023_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="4-Comparison all trips 2005-2023_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="4-Comparison all trips 2005-2023_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="4-Comparison all trips 2005-2023_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="4-Comparison all trips 2005-2023_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="4-Comparison all trips 2005-2023_files/libs/kePrint-0.0.1/kePrint.js"></script>
+
+<link href="4-Comparison all trips 2005-2023_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">4-Comparison all trips 2005-2023</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Aurore Ponchon </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="import-all-processed-data" class="level1">
+<h1>1. Import all processed data</h1>
+</section>
+<section id="trip-characteristics-2005-2023" class="level1">
+<h1>2. Trip characteristics 2005-2023</h1>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<caption>Sample size for trips</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">year</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Ids</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Trips</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Debut</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Fin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2005</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: left;">2005-06-28 10:17:17</td>
+<td style="text-align: left;">2005-07-05 13:57:22</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2006</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">2006-05-30 06:08:54</td>
+<td style="text-align: left;">2006-06-07 08:54:37</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2010</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: left;">2010-06-01 15:40:44</td>
+<td style="text-align: left;">2010-06-17 13:29:53</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2011</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">2011-06-14 13:00:45</td>
+<td style="text-align: left;">2011-06-25 13:02:17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2012</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">2012-06-12 10:57:22</td>
+<td style="text-align: left;">2012-06-23 18:38:52</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2013</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">2013-06-25 12:55:23</td>
+<td style="text-align: left;">2013-07-02 08:44:58</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2014</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">2014-06-20 08:55:46</td>
+<td style="text-align: left;">2014-06-27 15:18:38</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2015</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">2015-06-18 09:00:01</td>
+<td style="text-align: left;">2015-06-28 11:17:23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2016</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: left;">2016-06-17 08:58:59</td>
+<td style="text-align: left;">2016-06-24 10:02:04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2017</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">2017-06-21 18:37:56</td>
+<td style="text-align: left;">2017-07-01 10:17:50</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2019</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: left;">2019-06-21 11:52:19</td>
+<td style="text-align: left;">2019-06-28 16:11:05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2022</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">257</td>
+<td style="text-align: left;">2022-08-23 20:49:11</td>
+<td style="text-align: left;">2022-09-28 08:37:03</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2023</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">961</td>
+<td style="text-align: left;">2023-07-03 19:00:48</td>
+<td style="text-align: left;">2023-10-18 14:21:43</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+<div class="cell-output-display">
+<table class="table table-striped table-hover caption-top table-sm small" data-quarto-postprocess="true">
+<caption>Summary of trip characteristics</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Year</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Maximal distance (km)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Maximal distance (km)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Trip Duration (h)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Trip Duration (h)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total path (km)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Total path (km)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2005</td>
+<td style="text-align: left;">100.6 ± 7.9</td>
+<td style="text-align: left;">39.9 - 176.3</td>
+<td style="text-align: left;">17.3 ± 2</td>
+<td style="text-align: left;">3.3 - 28.9</td>
+<td style="text-align: left;">410.3 ± 46.4</td>
+<td style="text-align: left;">120.9 - 856.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2006</td>
+<td style="text-align: left;">82.4 ± 7.9</td>
+<td style="text-align: left;">3.3 - 133.4</td>
+<td style="text-align: left;">17.4 ± 2.1</td>
+<td style="text-align: left;">2.6 - 36.9</td>
+<td style="text-align: left;">263.1 ± 29.3</td>
+<td style="text-align: left;">8.2 - 518.2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2010</td>
+<td style="text-align: left;">121.3 ± 12.5</td>
+<td style="text-align: left;">23.5 - 333.1</td>
+<td style="text-align: left;">20.4 ± 1.4</td>
+<td style="text-align: left;">8.5 - 39.3</td>
+<td style="text-align: left;">409.2 ± 35.9</td>
+<td style="text-align: left;">92 - 961.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2011</td>
+<td style="text-align: left;">116.9 ± 9.3</td>
+<td style="text-align: left;">45.4 - 185.1</td>
+<td style="text-align: left;">21 ± 2</td>
+<td style="text-align: left;">4.7 - 45</td>
+<td style="text-align: left;">443.1 ± 43.1</td>
+<td style="text-align: left;">133.3 - 981.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2012</td>
+<td style="text-align: left;">120.8 ± 11.1</td>
+<td style="text-align: left;">40.8 - 269.9</td>
+<td style="text-align: left;">20.9 ± 2.2</td>
+<td style="text-align: left;">5.5 - 45.9</td>
+<td style="text-align: left;">451.3 ± 48.7</td>
+<td style="text-align: left;">134.2 - 1118.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2013</td>
+<td style="text-align: left;">107.9 ± 17.5</td>
+<td style="text-align: left;">54.6 - 169.1</td>
+<td style="text-align: left;">22.6 ± 3.4</td>
+<td style="text-align: left;">13.1 - 41</td>
+<td style="text-align: left;">429.9 ± 64.3</td>
+<td style="text-align: left;">182.2 - 691.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2014</td>
+<td style="text-align: left;">148.9 ± 17.4</td>
+<td style="text-align: left;">65 - 318.5</td>
+<td style="text-align: left;">32.6 ± 4.1</td>
+<td style="text-align: left;">9.5 - 64.9</td>
+<td style="text-align: left;">607.4 ± 61.4</td>
+<td style="text-align: left;">261.7 - 1032.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2015</td>
+<td style="text-align: left;">159.6 ± 14.5</td>
+<td style="text-align: left;">84.1 - 358</td>
+<td style="text-align: left;">29.4 ± 2.9</td>
+<td style="text-align: left;">7.1 - 49.5</td>
+<td style="text-align: left;">584 ± 48.7</td>
+<td style="text-align: left;">231.1 - 1143.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2016</td>
+<td style="text-align: left;">125.7 ± 11.6</td>
+<td style="text-align: left;">45.8 - 260.4</td>
+<td style="text-align: left;">25.7 ± 3.8</td>
+<td style="text-align: left;">9.2 - 72.4</td>
+<td style="text-align: left;">471 ± 65.3</td>
+<td style="text-align: left;">208.4 - 1322.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2017</td>
+<td style="text-align: left;">101.4 ± 6.7</td>
+<td style="text-align: left;">63.4 - 132.7</td>
+<td style="text-align: left;">17.6 ± 1.8</td>
+<td style="text-align: left;">7 - 26.1</td>
+<td style="text-align: left;">361 ± 30.5</td>
+<td style="text-align: left;">236.6 - 538.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2019</td>
+<td style="text-align: left;">127.5 ± 10.8</td>
+<td style="text-align: left;">62.3 - 224.2</td>
+<td style="text-align: left;">21.5 ± 1.6</td>
+<td style="text-align: left;">8.7 - 39.5</td>
+<td style="text-align: left;">401.4 ± 34.4</td>
+<td style="text-align: left;">148.1 - 766.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2022</td>
+<td style="text-align: left;">61.8 ± 4</td>
+<td style="text-align: left;">38.1 - 95.8</td>
+<td style="text-align: left;">18.5 ± 1.4</td>
+<td style="text-align: left;">10.5 - 27</td>
+<td style="text-align: left;">177 ± 11.5</td>
+<td style="text-align: left;">107.7 - 260.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2023</td>
+<td style="text-align: left;">81.3 ± 4.4</td>
+<td style="text-align: left;">44.4 - 132.1</td>
+<td style="text-align: left;">19.5 ± 1.3</td>
+<td style="text-align: left;">7.8 - 31.1</td>
+<td style="text-align: left;">228.6 ± 13.6</td>
+<td style="text-align: left;">112.3 - 400.6</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</section>
+<section id="comparison-between-years" class="level1">
+<h1>3. Comparison between years</h1>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/within%20year%20correlation-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/within%20year%20correlation-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/within%20year%20correlation-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/within%20year%20correlation-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+</div>
+</section>
+<section id="linear-mixed-models-2005-2023" class="level1">
+<h1>4. Linear mixed models 2005-2023</h1>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: all.trips 
+       AIC      BIC    logLik
+  3681.537 3766.214 -1824.768
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.2606361 0.8006683
+
+Fixed effects:  log(Distmaxkm) ~ year + Date 
+                Value Std.Error   DF   t-value p-value
+(Intercept)  3.796662 0.3035908 1250 12.505852  0.0000
+year2006    -0.625028 0.2644396  219 -2.363596  0.0190
+year2010     0.069597 0.2237165  219  0.311096  0.7560
+year2011     0.184581 0.2579947  219  0.715444  0.4751
+year2012     0.155365 0.2641638  219  0.588139  0.5570
+year2013    -0.133214 0.3403148  219 -0.391443  0.6959
+year2014     0.403861 0.2936245  219  1.375434  0.1704
+year2015     0.414375 0.2644068  219  1.567188  0.1185
+year2016     0.090443 0.2620031  219  0.345197  0.7303
+year2017     0.106059 0.2827317  219  0.375121  0.7079
+year2019     0.078060 0.2548947  219  0.306245  0.7597
+year2022    -0.941067 0.2253760  219 -4.175540  0.0000
+year2023    -0.613006 0.2054155  219 -2.984227  0.0032
+Date         0.004092 0.0012993 1250  3.149198  0.0017
+ Correlation: 
+         (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
+year2006 -0.553                                                               
+year2010 -0.641  0.621                                                        
+year2011 -0.504  0.529  0.624                                                 
+year2012 -0.492  0.517  0.610  0.524                                          
+year2013 -0.355  0.396  0.468  0.405  0.395                                   
+year2014 -0.427  0.462  0.545  0.470  0.459  0.355                            
+year2015 -0.475  0.513  0.606  0.522  0.510  0.395  0.458                     
+year2016 -0.486  0.519  0.613  0.528  0.515  0.398  0.463  0.514              
+year2017 -0.436  0.478  0.565  0.488  0.477  0.369  0.428  0.475  0.480       
+year2019 -0.487  0.531  0.627  0.542  0.529  0.409  0.475  0.528  0.533  0.493
+year2022 -0.222  0.541  0.646  0.585  0.571  0.457  0.521  0.579  0.581  0.545
+year2023 -0.347  0.613  0.729  0.650  0.635  0.503  0.577  0.641  0.644  0.602
+Date     -0.784  0.142  0.152  0.065  0.064  0.015  0.038  0.043  0.051  0.030
+         yr2019 yr2022 yr2023
+year2006                     
+year2010                     
+year2011                     
+year2012                     
+year2013                     
+year2014                     
+year2015                     
+year2016                     
+year2017                     
+year2019                     
+year2022  0.603              
+year2023  0.667  0.872       
+Date      0.037 -0.377 -0.282
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-4.4531780 -0.3500726  0.1938501  0.5908291  2.3407102 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF   F-value p-value
+(Intercept)     1  1250 13899.384  &lt;.0001
+year           12   219     6.630  &lt;.0001
+Date            1  1250     9.917  0.0017</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: all.trips 
+       AIC     BIC    logLik
+  3570.583 3655.26 -1769.291
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.2635798 0.7696693
+
+Fixed effects:  log(TripDurh) ~ year + Date 
+                 Value Std.Error   DF   t-value p-value
+(Intercept)  0.6802541 0.2939189 1250  2.314428  0.0208
+year2006     0.0522181 0.2558208  219  0.204120  0.8384
+year2010     0.4038357 0.2167237  219  1.863367  0.0637
+year2011     0.3792299 0.2492747  219  1.521333  0.1296
+year2012     0.3493114 0.2552802  219  1.368345  0.1726
+year2013     0.2217210 0.3290038  219  0.673916  0.5011
+year2014     0.7776521 0.2836976  219  2.741130  0.0066
+year2015     0.6014150 0.2555600  219  2.353322  0.0195
+year2016     0.3923245 0.2532752  219  1.549005  0.1228
+year2017     0.2219401 0.2740750  219  0.809779  0.4189
+year2019     0.1920029 0.2465998  219  0.778601  0.4371
+year2022    -0.8054287 0.2188837  219 -3.679711  0.0003
+year2023    -0.5623274 0.1991229  219 -2.824022  0.0052
+Date         0.0109607 0.0012595 1250  8.702783  0.0000
+ Correlation: 
+         (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
+year2006 -0.552                                                               
+year2010 -0.639  0.619                                                        
+year2011 -0.503  0.528  0.623                                                 
+year2012 -0.492  0.516  0.608  0.524                                          
+year2013 -0.354  0.395  0.466  0.404  0.395                                   
+year2014 -0.427  0.461  0.544  0.470  0.459  0.355                            
+year2015 -0.474  0.512  0.604  0.522  0.510  0.394  0.458                     
+year2016 -0.485  0.518  0.611  0.528  0.515  0.398  0.463  0.513              
+year2017 -0.434  0.476  0.562  0.486  0.475  0.367  0.427  0.474  0.478       
+year2019 -0.486  0.530  0.625  0.541  0.528  0.408  0.474  0.527  0.532  0.491
+year2022 -0.219  0.537  0.640  0.582  0.568  0.454  0.519  0.576  0.578  0.540
+year2023 -0.344  0.610  0.724  0.648  0.633  0.501  0.575  0.638  0.642  0.598
+Date     -0.785  0.142  0.152  0.066  0.064  0.015  0.038  0.043  0.051  0.030
+         yr2019 yr2022 yr2023
+year2006                     
+year2010                     
+year2011                     
+year2012                     
+year2013                     
+year2014                     
+year2015                     
+year2016                     
+year2017                     
+year2019                     
+year2022  0.599              
+year2023  0.663  0.866       
+Date      0.037 -0.376 -0.282
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-3.7895256 -0.5480071  0.2000117  0.6295943  2.9851419 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1250 5840.982  &lt;.0001
+year           12   219    2.473  0.0047
+Date            1  1250   75.738  &lt;.0001</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: all.trips 
+       AIC      BIC    logLik
+  3872.835 3957.513 -1920.418
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:    0.276505 0.8547108
+
+Fixed effects:  log(TotalPathkm) ~ year + Date 
+                Value Std.Error   DF   t-value p-value
+(Intercept)  4.820298 0.3237999 1250 14.886657  0.0000
+year2006    -0.818386 0.2820784  219 -2.901272  0.0041
+year2010    -0.022938 0.2386006  219 -0.096133  0.9235
+year2011     0.169854 0.2752450  219  0.617102  0.5378
+year2012     0.123220 0.2818207  219  0.437227  0.6624
+year2013    -0.120482 0.3630444  219 -0.331867  0.7403
+year2014     0.500832 0.3132575  219  1.598786  0.1113
+year2015     0.362348 0.2820742  219  1.284584  0.2003
+year2016    -0.000944 0.2795048  219 -0.003377  0.9973
+year2017     0.006976 0.3015172  219  0.023136  0.9816
+year2019    -0.144882 0.2718956  219 -0.532860  0.5947
+year2022    -1.381777 0.2402970  219 -5.750288  0.0000
+year2023    -1.050179 0.2190646  219 -4.793922  0.0000
+Date         0.005818 0.0013855 1250  4.199067  0.0000
+ Correlation: 
+         (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
+year2006 -0.553                                                               
+year2010 -0.642  0.621                                                        
+year2011 -0.504  0.529  0.624                                                 
+year2012 -0.492  0.517  0.610  0.524                                          
+year2013 -0.355  0.396  0.468  0.405  0.395                                   
+year2014 -0.427  0.462  0.546  0.470  0.459  0.355                            
+year2015 -0.475  0.513  0.606  0.522  0.510  0.395  0.458                     
+year2016 -0.486  0.519  0.613  0.528  0.516  0.398  0.463  0.514              
+year2017 -0.437  0.479  0.565  0.488  0.477  0.369  0.428  0.476  0.480       
+year2019 -0.487  0.531  0.628  0.542  0.529  0.409  0.475  0.528  0.533  0.493
+year2022 -0.223  0.542  0.646  0.585  0.572  0.457  0.522  0.579  0.581  0.546
+year2023 -0.348  0.613  0.729  0.651  0.636  0.503  0.577  0.641  0.645  0.603
+Date     -0.784  0.142  0.152  0.065  0.064  0.015  0.038  0.043  0.051  0.030
+         yr2019 yr2022 yr2023
+year2006                     
+year2010                     
+year2011                     
+year2012                     
+year2013                     
+year2014                     
+year2015                     
+year2016                     
+year2017                     
+year2019                     
+year2022  0.604              
+year2023  0.667  0.873       
+Date      0.037 -0.377 -0.282
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-4.3402356 -0.4296603  0.1616030  0.5917910  2.5585747 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF   F-value p-value
+(Intercept)     1  1250 19402.205  &lt;.0001
+year           12   219    11.080  &lt;.0001
+Date            1  1250    17.632  &lt;.0001</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="correlation-with-colony-size" class="level1">
+<h1>5. Correlation with colony size</h1>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.col 
+       AIC      BIC    logLik
+  3705.831 3727.033 -1848.916
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:    0.361734 0.8022027
+
+Fixed effects:  log(Distmaxkm) ~ count 
+               Value Std.Error   DF   t-value p-value
+(Intercept) 3.535271 0.1837420 1251 19.240404       0
+count       0.000046 0.0000102  230  4.464609       0
+ Correlation: 
+      (Intr)
+count -0.973
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-4.3155360 -0.3592711  0.2080641  0.5624456  2.2249092 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF   F-value p-value
+(Intercept)     1  1251 10285.005  &lt;.0001
+count           1   230    19.933  &lt;.0001</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.col 
+       AIC    BIC    logLik
+  3629.298 3650.5 -1810.649
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.2987545 0.7876794
+
+Fixed effects:  log(TripDurh) ~ count 
+                Value Std.Error   DF   t-value p-value
+(Intercept) 2.2710328 0.1590813 1251 14.275925  0.0000
+count       0.0000274 0.0000090  230  3.044876  0.0026
+ Correlation: 
+      (Intr)
+count -0.97 
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-3.5594646 -0.6079870  0.1830216  0.5953912  3.2072909 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1251 5083.944  &lt;.0001
+count           1   230    9.271  0.0026</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.col 
+       AIC     BIC    logLik
+  3922.078 3943.28 -1957.039
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.4267806 0.8587802
+
+Fixed effects:  log(TotalPathkm) ~ count 
+               Value  Std.Error   DF  t-value p-value
+(Intercept) 4.201333 0.21187562 1251 19.82924       0
+count       0.000073 0.00001165  230  6.23699       0
+ Correlation: 
+      (Intr)
+count -0.974
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-4.3045559 -0.4332902  0.1753129  0.5800464  2.7507704 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF F-value p-value
+(Intercept)     1  1251 13017.4  &lt;.0001
+count           1   230    38.9  &lt;.0001</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="correlation-with-breeding-success" class="level1">
+<h1>6. Correlation with breeding success</h1>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.succ 
+       AIC      BIC    logLik
+  3239.655 3260.418 -1615.828
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.3399619 0.7883044
+
+Fixed effects:  log(Distmaxkm) ~ success 
+               Value Std.Error   DF  t-value p-value
+(Intercept) 3.938880 0.1103580 1200 35.69183  0.0000
+success     0.751021 0.2275427  127  3.30057  0.0013
+ Correlation: 
+        (Intr)
+success -0.896
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-4.4204631 -0.4073464  0.1921459  0.6218027  2.2335923 
+
+Number of Observations: 1329
+Number of Groups: 129 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1200 7556.120  &lt;.0001
+success         1   127   10.894  0.0013</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20breeding%20success-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.succ 
+     AIC      BIC   logLik
+  3256.3 3277.063 -1624.15
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.3308879 0.7942145
+
+Fixed effects:  log(TripDurh) ~ success 
+                Value Std.Error   DF  t-value p-value
+(Intercept) 2.6272632 0.1084276 1200 24.23058  0.0000
+success     0.2681049 0.2235662  127  1.19922  0.2327
+ Correlation: 
+        (Intr)
+success -0.895
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-3.5885191 -0.6270055  0.1605802  0.6153378  3.1565312 
+
+Number of Observations: 1329
+Number of Groups: 129 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1200 3214.646  &lt;.0001
+success         1   127    1.438  0.2327</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20breeding%20success-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.succ 
+     AIC      BIC   logLik
+  3256.3 3277.063 -1624.15
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept)  Residual
+StdDev:   0.3308879 0.7942145
+
+Fixed effects:  log(TripDurh) ~ success 
+                Value Std.Error   DF  t-value p-value
+(Intercept) 2.6272632 0.1084276 1200 24.23058  0.0000
+success     0.2681049 0.2235662  127  1.19922  0.2327
+ Correlation: 
+        (Intr)
+success -0.895
+
+Standardized Within-Group Residuals:
+       Min         Q1        Med         Q3        Max 
+-3.5885191 -0.6270055  0.1605802  0.6153378  3.1565312 
+
+Number of Observations: 1329
+Number of Groups: 129 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1200 3214.646  &lt;.0001
+success         1   127    1.438  0.2327</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20breeding%20success-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>png 
+  2 </code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

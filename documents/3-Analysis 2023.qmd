@@ -7,9 +7,11 @@ editor: visual
 
 # Trip summary for 2023
 
+The following code runs the analysis relative to the at-sea behaviour and nest attendance of tracked Northern gannets in 2023.
+
 The first chunk calculates the trips summary and characteristics and produce summary tables as reported in the manuscript
 
-```{r}
+```{r summary}
 #| echo: false
 #| include: true
 #| warning: false
@@ -684,19 +686,19 @@ locs.ltr.neg23<-as.ltraj(locs.neg.df23[,c("long","lat")],
 #                     h=7500,
 #                     grid=1000)
 # 
-BA.KUD.90<-kerneloverlap(locs.spdf23[,"Yeux_bino"], grid=500,meth="BA",percent=90)
-BA.KUD.50<-kerneloverlap(locs.spdf23[,"Yeux_bino"], grid=500,meth="BA",percent=50)
+BA.KUD.90.yx<-kerneloverlap(locs.spdf23[,"Yeux_bino"], grid=500,meth="BA",percent=90)
+BA.KUD.50.yx<-kerneloverlap(locs.spdf23[,"Yeux_bino"], grid=500,meth="BA",percent=50)
 print("Yeux 50 ")
-BA.KUD.50
+BA.KUD.50.yx
 print("Yeux 90")
-BA.KUD.90
+BA.KUD.90.yx
 
-BA.KUD.90<-kerneloverlap(locs.spdf23[,"sex"], grid=500,meth="BA",percent=90)
-BA.KUD.50<-kerneloverlap(locs.spdf23[,"sex"], grid=500,meth="BA",percent=50)
+BA.KUD.90.sex<-kerneloverlap(locs.spdf23[,"sex"], grid=500,meth="BA",percent=90)
+BA.KUD.50.sex<-kerneloverlap(locs.spdf23[,"sex"], grid=500,meth="BA",percent=50)
 print("Sex 50 ")
-      BA.KUD.50
+      BA.KUD.50.sex
 print("Sex 90 ")
-      BA.KUD.90
+      BA.KUD.90.sex
 
 
 ##kernels with brb
