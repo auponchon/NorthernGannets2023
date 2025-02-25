@@ -297,7 +297,7 @@ dev.off()
 
 # Statistical analysis 2023
 
-Linear mixed models applied on trip characteristics. Sex, iris colour and their interaction as well as day of the year were tested as fixed effect while bird ID was used as a random effect.
+Linear mixed models applied on trip characteristics. Sex, iris colour and their interaction as well as day of the year were tested as fixed effect while bird ID was used as a random effect. Code to produce figure 2.
 
 ```{r}
 #| echo: false
@@ -459,9 +459,11 @@ geom_point(alpha=0.4) +
                         breaks=seq(0,400,100),
                         expand=c(0.001,0.001)) + 
  scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark')) +
  scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark'))  +
      theme_light()+
     theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
@@ -485,9 +487,11 @@ geom_point(alpha=0.4) +
                        breaks=seq(0,200,50),
                        expand=c(0.001,0)) +
  scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark')) +
  scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
@@ -511,9 +515,11 @@ geom_point(alpha=0.4) +
                        breaks=seq(0,1200,300),
                        expand=c(0.001,0)) +
  scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark')) +
  scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(#legend.position="none",
           panel.grid.minor = element_blank()) 
@@ -536,10 +542,12 @@ geom_point(alpha=0.4) +
     scale_y_continuous(limits=c(0,60),
                        breaks=seq(0,60,15),
                        expand=c(0.001,0)) +
- scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black')) +
+  scale_colour_manual(values=mycolinterac,name="Sex &\niris colour",
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark')) +
  scale_fill_manual(values=mycolinterac,name="Sex &\niris colour",
-                     labels=c('F:0'='F white','F:1'='F black','M:0'='M white','M:1'='M black'))  +
+                     labels=c('F:0'='F normal','F:1'='F dark',
+                              'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(panel.grid.minor = element_blank()) 
     
@@ -562,7 +570,7 @@ dev.off()
 
 # Spatial analysis 2023
 
-Calculate kernel UD according to sex and iris colour separately, as interaction is not significant.
+Calculate kernel UD according to sex and iris colour separately, as interaction is not significant. Code to produce figure 1d-e.
 
 ```{r}
 #| echo: false
@@ -878,10 +886,10 @@ print(kern.sex23)
                                    "50-"="#004616",
                                    "90+"="#ED9C97FF",
                                    "90-"="#81C07A"),
-                            labels=c("90+"="90% UD black",
-                                     "50+"="50% UD black",
-                                     "90-" = "90% UD white",
-                                     "50-" = "50% UD white"),
+                            labels=c("90+"="90% UD dark",
+                                     "50+"="50% UD dark",
+                                     "90-" = "90% UD normal",
+                                     "50-" = "50% UD normal"),
                        #   levels=c("90F","50F","90M","50M"),
                             name="Iris\ncolour") +
     annotation_scale(location = "br",
