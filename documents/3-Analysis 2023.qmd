@@ -112,17 +112,20 @@ nb.trips.sum<-trips %>%
     group_by(Yeux_bino,id) %>% 
     summarize(Trips=mean(difftime(max(DateEnd),min(DateStart),units="days"))) %>% 
     summarize(cc=mean(Trips),
-              SE=std.error(Trips),
+              SE=std.error(Trips, na.rm=T),
               Min=min(Trips),
               Max=max(Trips))
 
 #count number of trips per individuals
-nb.trips<-trips %>% 
-     group_by(id, Yeux_bino) %>% 
-     count() %>% 
-     group_by(Yeux_bino) %>% 
-     summarize(Min=min(n),
-               Max=max(n))
+nb.trip.mean<-trips %>% 
+    dplyr::group_by(id,Yeux_bino) %>% 
+    dplyr::summarize(NB.TRIP=length(trip.id)) %>% 
+    dplyr::group_by(Yeux_bino) %>% 
+    dplyr::summarize(mean=mean(NB.TRIP),
+              SE=std.error(NB.TRIP, na.rm=T),
+              min.nb.trip=min(NB.TRIP),
+              max.nb.trip=max(NB.TRIP))
+
 
 #calculate mean and sd aby individuals
 sum.id<- trips %>% 
@@ -828,7 +831,7 @@ kern.sex23<-ggplot()+
         coord_sf(xlim=ext.brit[c(1,2)],
                  ylim=ext.brit[c(3,4)],
                  expand=F) +
-        labs(tag="b)") +
+        labs(tag="e)") +
         scale_fill_manual(values=c("50F"="darkorchid4",
                                    "50M"="#0093AF",
                                    "90F"="darkorchid1",
@@ -881,7 +884,7 @@ print(kern.sex23)
  coord_sf(xlim=ext.brit[c(1,2)],
           ylim=ext.brit[c(3,4)],
           expand=F) +  
-  labs(tag="a)") +
+  labs(tag="d)") +
         scale_fill_manual(values=c("50+"="#E1595CFF",
                                    "50-"="#004616",
                                    "90+"="#ED9C97FF",
