@@ -198,14 +198,15 @@ summytrips<-sum.trips1 %>%
 
 # mycol2<-c(magma(n=length(unique(all.trips$year)),begin=0.15,end=0.9),rep("black",7))
 mycol2<-c(turbo(n=length(unique(all.trips$year))),rep("black",7))
+
 colorsize<-c(rep("black",2),
              mycol2[c(1,2)],
              rep("black",3),
-             mycol2[c(3:10)],
+             mycol2[c(3:11)],
              "black",
-             mycol2[11],
-            "black",
+             "black",
              mycol2[c(12,13)])
+
 
 scale = 0.04/1000
 colsize<-ggplot(data=nb.ind) + 
@@ -347,16 +348,20 @@ newdatrouz<-expand.grid(day=seq(min(all.trips$Date),
                                 max(all.trips$Date),1),
                         year=as.factor(unique(all.trips$year)))
 #glme on distance
-glmm.dist.lme.rouz<-lme(log(Distmaxkm) ~ year + Date , 
+glmm.dist.lme.rouz<-lme(sqrt(Distmaxkm) ~ year + Date , 
                         random=~1 | (id) ,
                         data=all.trips)
 
 summary(glmm.dist.lme.rouz)
 anova(glmm.dist.lme.rouz)
+qqnorm(resid(glmm.dist.lme.rouz))
+qqline(resid(glmm.dist.lme.rouz))
+
+
 
 # #check effects
  plot_model(glmm.dist.lme.rouz,sort.est = TRUE,show.values = TRUE)
-# ggpredict(glmm.dist.lme.rouz, terms = "year", type="fixed")%>% plot()
+# 
 # ggpredict(glmm.dist.lme.rouz, terms = "Date", type="fixed")%>% plot()
 
 #estimate predicted values on dates and year
@@ -369,10 +374,10 @@ emmrouzdatedist <- data.frame(emmeans(grouzdatedist,
 textsize<-8
 
 #plot intra-year effect on days according to year
-distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=exp(emmean)), group=year ) +
+distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=(emmean)^2), group=year ) +
      geom_ribbon(data=emmrouzdatedist,aes( x=Date,
-                                 ymin=exp(lower.CL),
-                                 ymax=exp(upper.CL),
+                                 ymin=(lower.CL)^2,
+                                 ymax=(upper.CL)^2,
                                  fill=year),
                             alpha=0.2,colour = NA) +
          geom_text(x=217, y=350, label="***",size=textsize) +
@@ -380,9 +385,9 @@ distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=exp(emmean)), group=year ) +
               alpha=0.5,
               shape=16,
               show.legend=T) +
-  geom_line(data=emmrouzdatedist,aes(x=Date,y=exp(emmean),color=year),
+  geom_line(data=emmrouzdatedist,aes(x=Date,y=(emmean)^2,color=year),
              show.legend = F,
-            linewidth=2) +
+            linewidth=1.5) +
   
   scale_y_continuous(limits=c(0,400),
                      breaks=seq(0,400,100),
@@ -392,7 +397,7 @@ distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=exp(emmean)), group=year ) +
                        expand=c(0.001,0.001),
                        labels=c("30/05","24/06","19/07",
                        "13/08","07/09","02/10","27/10")) +
-  labs(y="Maximal distance (km)",tag="g)",x="") +
+  labs(y="Maximal distance (km)",tag="d)",x="") +
   scale_colour_manual(values=mycol) +
   scale_fill_manual(values=mycol) +
   theme_light() +
@@ -405,12 +410,14 @@ print(distdate)
 #2) GLMM on trip duration
 
 #glme on duration
-glmm.dur.lme.rouz<-lme(log(TripDurh) ~ year + Date, 
+glmm.dur.lme.rouz<-lme(sqrt(TripDurh) ~ year + Date, 
                         random=~1 | id , 
                         data=all.trips)
 
 summary(glmm.dur.lme.rouz)
 anova(glmm.dur.lme.rouz)
+qqnorm(resid(glmm.dur.lme.rouz))
+qqline(resid(glmm.dur.lme.rouz))
 
 #check effects
 plot_model(glmm.dur.lme.rouz,sort.est = TRUE,show.values = TRUE)
@@ -423,10 +430,10 @@ emmrouzdatedur <- data.frame(emmeans(grouzdatedur,
                               level= 0.95))
 
 #plot intra-year effect on days according to year
-durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=exp(emmean)), group=year ) +
+durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=(emmean)^2), group=year ) +
      geom_ribbon(data=emmrouzdatedur,aes( x=Date,
-                                 ymin=exp(lower.CL),
-                                 ymax=exp(upper.CL),
+                                 ymin=(lower.CL)^2,
+                                 ymax=(upper.CL)^2,
                                  fill=year),
                             alpha=0.2,colour = NA) +
       geom_text(x=217, y=175, label="***",size=textsize) +
@@ -434,9 +441,9 @@ durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=exp(emmean)), group=year ) +
               alpha=0.5,
               shape=16,
               show.legend=T) +
-  geom_line(data=emmrouzdatedur,aes(x=Date,y=exp(emmean),color=year),
+  geom_line(data=emmrouzdatedur,aes(x=Date,y=(emmean)^2,color=year),
              show.legend = F,
-            linewidth=2) +
+            linewidth=1.5) +
   
   scale_y_continuous(limits=c(0,200),
                      breaks=seq(0,200,50),
@@ -446,7 +453,7 @@ durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=exp(emmean)), group=year ) +
                        expand=c(0.001,0.001),
                        labels=c("30/05","24/06","19/07",
                        "13/08","07/09","02/10","27/10")) +
-  labs(y="Trip duration (h)",tag="h)",x="Date") +
+  labs(y="Trip duration (h)",tag="e)",x="Date") +
   scale_colour_manual(values=mycol) +
   scale_fill_manual(values=mycol) +
   theme_light() +
@@ -459,12 +466,14 @@ print(durdate)
 #3) GLMM on total distance
 
 #glme on duration
-glmm.tot.lme.rouz<-lme(log(TotalPathkm) ~ year + Date, 
+glmm.tot.lme.rouz<-lme(sqrt(TotalPathkm) ~ year + Date, 
                         random=~1 | id , 
                         data=all.trips)
 
 summary(glmm.tot.lme.rouz)
 anova(glmm.tot.lme.rouz)
+qqnorm(resid(glmm.tot.lme.rouz))
+qqline(resid(glmm.tot.lme.rouz))
 
 #check effects
 plot_model(glmm.tot.lme.rouz,sort.est = TRUE,show.values = TRUE)
@@ -477,11 +486,11 @@ emmrouzdatetotpath <- data.frame(emmeans(grouzdatetotpath,
                               level= 0.95))
 
 #plot intra-year effect on days according to year
-totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean)), 
+totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=(emmean)^2), 
                     group=year ) +
      geom_ribbon(data=emmrouzdatetotpath,aes( x=Date,
-                                 ymin=exp(lower.CL),
-                                 ymax=exp(upper.CL),
+                                 ymin=(lower.CL)^2,
+                                 ymax=(upper.CL)^2,
                                  fill=year),
                             alpha=0.2,colour = NA) +
      geom_text(x=217, y=1760, label="***",size=textsize) +
@@ -489,9 +498,9 @@ totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean)),
               alpha=0.5,
               shape=16,
               show.legend=T) +
-  geom_line(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean),color=year),
+  geom_line(data=emmrouzdatetotpath,aes(x=Date,y=(emmean)^2,color=year),
              show.legend = F,
-            linewidth=2) +
+            linewidth=1.5) +
   
   scale_y_continuous(limits=c(0,2000),
                      breaks=seq(0,2000,400),
@@ -501,7 +510,7 @@ totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=exp(emmean)),
                        expand=c(0.001,0.001),
                        labels=c("30/05","24/06","19/07",
                        "13/08","07/09","02/10","27/10")) +
-  labs(y="Total distance (km)",tag="i)",x="") +
+  labs(y="Total distance (km)",tag="f)",x="") +
   scale_colour_manual(values=mycol, name="Year") +
   scale_fill_manual(values=mycol,name='Year') +
   theme_light() +
@@ -544,7 +553,7 @@ trips.col<-all.trips %>%
     left_join(.,nb.ind,by="YearN")
 
 
-dist.col.lme.rouz<-lme(log(Distmaxkm) ~ count, 
+dist.col.lme.rouz<-lme(sqrt(Distmaxkm) ~ count, 
                        random=~1 | id , 
                        data=trips.col)
 distcol.lme <- ref_grid(dist.col.lme.rouz, 
@@ -554,15 +563,17 @@ emmdistcol <- data.frame(emmeans(distcol.lme,
                                  level= 0.95))
 summary(dist.col.lme.rouz)
 anova(dist.col.lme.rouz)
+qqnorm(resid(dist.col.lme.rouz))
+qqline(resid(dist.col.lme.rouz))
 
 #plot colony effect on trips
-distcol<-ggplot(data=emmdistcol,aes(x=count,y=exp(emmean)) ) +
+distcol<-ggplot(data=emmdistcol,aes(x=count,y=(emmean)^2) ) +
     geom_point(data=trips.col,aes(x=count,y=Distmaxkm,color=year),
                shape=16,alpha=0.5)+
     geom_line(size=1.5) +
     geom_ribbon(data=emmdistcol,aes( x=count,
-                                     ymin=exp(lower.CL),
-                                     ymax=exp(upper.CL)),
+                                     ymin=(lower.CL)^2,
+                                     ymax=(upper.CL)^2),
                 alpha=0.3,colour = NA) +
     geom_text(x=17000, y=350, label="***",size=textsize) +
     scale_y_continuous(limits=c(0,400),
@@ -584,7 +595,7 @@ print(distcol)
 
 #plot colony effect on trips
 
-dur.col.lme.rouz<-lme(log(TripDurh) ~ count, 
+dur.col.lme.rouz<-lme(sqrt(TripDurh) ~ count, 
                       random=~1 | id , 
                       data=trips.col)
 durcol.lme <- ref_grid(dur.col.lme.rouz, 
@@ -595,14 +606,16 @@ emmdurcol <- data.frame(emmeans(durcol.lme,
 
 summary(dur.col.lme.rouz)
 anova(dur.col.lme.rouz)
+qqnorm(resid(dur.col.lme.rouz))
+qqline(resid(dur.col.lme.rouz))
 
-durcol<-ggplot(data=emmdurcol,aes(x=count,y=exp(emmean)) ) +
+durcol<-ggplot(data=emmdurcol,aes(x=count,y=(emmean)^2) ) +
     geom_point(data=trips.col,aes(x=count,y=TripDurh,color=year),
                shape=16,alpha=0.3)+
     geom_line(size=1.5) +
     geom_ribbon(data=emmdurcol,aes( x=count,
-                                     ymin=exp(lower.CL),
-                                     ymax=exp(upper.CL)),
+                                     ymin=(lower.CL)^2,
+                                     ymax=(upper.CL)^2),
                 alpha=0.5,colour = NA) +
     geom_text(x=17000, y=175, label="***",size=textsize) +
     scale_y_continuous(limits=c(0,200),
@@ -622,7 +635,7 @@ durcol<-ggplot(data=emmdurcol,aes(x=count,y=exp(emmean)) ) +
 print(durcol)
 
 
-tot.col.lme.rouz<-lme(log(TotalPathkm) ~ count, 
+tot.col.lme.rouz<-lme(sqrt(TotalPathkm) ~ count, 
                       random=~1 | id , 
                       data=trips.col)
 totcol.lme <- ref_grid(tot.col.lme.rouz, 
@@ -633,14 +646,16 @@ emmtotcol <- data.frame(emmeans(totcol.lme,
                                level= 0.95))
 summary(tot.col.lme.rouz)
 anova(tot.col.lme.rouz)
+qqnorm(resid(tot.col.lme.rouz))
+qqline(resid(tot.col.lme.rouz))
 
-totcol<-ggplot(data=emmtotcol,aes(x=count,y=exp(emmean)) ) +
+totcol<-ggplot(data=emmtotcol,aes(x=count,y=(emmean)^2) ) +
     geom_point(data=trips.col,aes(x=count,y=TotalPathkm,color=year),
                shape=16,alpha=0.3)+
     geom_line(size=1.5) +
     geom_ribbon(data=emmtotcol,aes( x=count,
-                                    ymin=exp(lower.CL),
-                                    ymax=exp(upper.CL)),
+                                    ymin=(lower.CL)^2,
+                                    ymax=(upper.CL)^2),
                 alpha=0.5,colour = NA) +
      geom_text(x=17000, y=1225, label="***",size=textsize) +
     scale_y_continuous(limits=c(0,1400),
@@ -677,141 +692,141 @@ print(totcol)
 ####
 ###LME with breeding success
 
-trips.succ<-trips.col %>% 
-    filter(!is.na(success))
-
-dist.succ.lme.rouz<-lme(log(Distmaxkm) ~ success, 
-                       random=~1 | id , 
-                       data=trips.succ)
-distsucc.lme <- ref_grid(dist.succ.lme.rouz, 
-                        cov.keep= "success")
-emmdistsucc <- data.frame(emmeans(distsucc.lme, 
-                                 spec= "success", 
-                                 level= 0.95))
-
-summary(dist.succ.lme.rouz)
-anova(dist.succ.lme.rouz)
-
-#plot colony effect on trips
-distsucc<-ggplot(data=emmdistsucc,aes(x=success,y=exp(emmean)) ) +
-    geom_point(data=trips.succ,aes(x=success,y=Distmaxkm,color=year),
-               shape=16,alpha=0.5)+
-    geom_line(size=1.5) +
-    geom_ribbon(data=emmdistsucc,aes( x=success,
-                                     ymin=exp(lower.CL),
-                                     ymax=exp(upper.CL)),
-                alpha=0.3,colour = NA) +
-    geom_text(x=0.32, y=350, label="***",size=textsize) +
-    scale_y_continuous(limits=c(0,400),
-                       breaks=seq(0,400,100),
-                       expand=c(0.001,0.001))+
-    scale_x_continuous(limits=c(0, 0.7),
-                       breaks=seq(0,0.7,0.2),
-                       expand=c(0.001,0.001))+
-    labs(y="Maximal distance (km)",
-         tag="d)",
-         x="") +
-    scale_colour_manual(values=mycol[6:13]) +
-    # scale_fill_manual(values=mycol) +
-    theme_light() +
-    theme(#legend.position="none",
-        panel.grid.minor = element_blank()) 
-
-print(distsucc)
-
-#plot colony effect on trips
-
-
-dur.succ.lme.rouz<-lme(log(TripDurh) ~ success, 
-                       random=~1 | id , 
-                       data=trips.succ)
-dursucc.lme <- ref_grid(dur.succ.lme.rouz, 
-                        cov.keep= "success")
-emmdursucc <- data.frame(emmeans(dursucc.lme, 
-                                 spec= "success", 
-                                 level= 0.95))
-summary(dur.succ.lme.rouz)
-anova(dur.succ.lme.rouz)
-
-dursucc<-ggplot(data=emmdursucc,aes(x=success,y=exp(emmean)) ) +
-    geom_point(data=trips.succ,aes(x=success,y=TripDurh,color=year),
-               shape=16,alpha=0.3)+
-    geom_line(size=1.5) +
-    geom_ribbon(data=emmdursucc,aes( x=success,
-                                     ymin=exp(lower.CL),
-                                     ymax=exp(upper.CL)),
-                alpha=0.5,colour = NA) +
-    scale_y_continuous(limits=c(0,200),
-                       breaks=seq(0,200,50),
-                       expand=c(0.001,0.001))+
-    scale_x_continuous(limits=c(0, 0.7),
-                       breaks=seq(0,0.7,0.2),
-                       expand=c(0.001,0.001))+
-    labs(y="Trip duration (h)",
-         tag="e)",
-         x="Fledging success") +
-    scale_colour_manual(values=mycol[6:13]) +
-    theme_light() +
-    theme(#legend.position="none",
-        panel.grid.minor = element_blank()) 
-
-print(dursucc)
-
-
-tot.succ.lme.rouz<-lme(log(TotalPathkm) ~ success, 
-                       random=~1 | id , 
-                       data=trips.succ)
-totsucc.lme <- ref_grid(tot.succ.lme.rouz, 
-                        cov.keep= "success")
-emmtotsucc <- data.frame(emmeans(totsucc.lme, 
-                                 spec= "success", 
-                                 level= 0.95))
-summary(dur.succ.lme.rouz)
-anova(dur.succ.lme.rouz)
-
-totsucc<-ggplot(data=emmtotsucc,aes(x=success,y=exp(emmean)) ) +
-    geom_point(data=trips.succ,aes(x=success,y=TotalPathkm,color=year),
-               shape=16,alpha=0.3)+
-    geom_line(size=1.5) +
-    geom_ribbon(data=emmtotsucc,aes( x=success,
-                                    ymin=exp(lower.CL),
-                                    ymax=exp(upper.CL)),
-                alpha=0.5,colour = NA) +
-     geom_text(x=0.32, y=1225, label="***",size=textsize) +
-    scale_y_continuous(limits=c(0,1400),
-                       breaks=seq(0,1400,200),
-                       expand=c(0.001,0.001))+
-    scale_x_continuous(limits=c(0, 0.7),
-                       breaks=seq(0,0.7,0.2),
-                       expand=c(0.001,0.001))+
-    labs(y="Total distance (km)",
-         tag="f)",
-         x="") +
-    scale_colour_manual(values=mycol[6:13],
-                        name="Year") +
-    theme_light() +
-    theme(#legend.position="none",
-        panel.grid.minor = element_blank()) 
-
-print(totsucc)
+# trips.succ<-trips.col %>% 
+#     filter(!is.na(success))
+# 
+# dist.succ.lme.rouz<-lme(log(Distmaxkm) ~ success, 
+#                        random=~1 | id , 
+#                        data=trips.succ)
+# distsucc.lme <- ref_grid(dist.succ.lme.rouz, 
+#                         cov.keep= "success")
+# emmdistsucc <- data.frame(emmeans(distsucc.lme, 
+#                                  spec= "success", 
+#                                  level= 0.95))
+# 
+# summary(dist.succ.lme.rouz)
+# anova(dist.succ.lme.rouz)
+# 
+# #plot colony effect on trips
+# distsucc<-ggplot(data=emmdistsucc,aes(x=success,y=exp(emmean)) ) +
+#     geom_point(data=trips.succ,aes(x=success,y=Distmaxkm,color=year),
+#                shape=16,alpha=0.5)+
+#     geom_line(size=1.5) +
+#     geom_ribbon(data=emmdistsucc,aes( x=success,
+#                                      ymin=exp(lower.CL),
+#                                      ymax=exp(upper.CL)),
+#                 alpha=0.3,colour = NA) +
+#     geom_text(x=0.32, y=350, label="***",size=textsize) +
+#     scale_y_continuous(limits=c(0,400),
+#                        breaks=seq(0,400,100),
+#                        expand=c(0.001,0.001))+
+#     scale_x_continuous(limits=c(0, 0.7),
+#                        breaks=seq(0,0.7,0.2),
+#                        expand=c(0.001,0.001))+
+#     labs(y="Maximal distance (km)",
+#          tag="d)",
+#          x="") +
+#     scale_colour_manual(values=mycol[6:13]) +
+#     # scale_fill_manual(values=mycol) +
+#     theme_light() +
+#     theme(#legend.position="none",
+#         panel.grid.minor = element_blank()) 
+# 
+# print(distsucc)
+# 
+# #plot colony effect on trips
+# 
+# 
+# dur.succ.lme.rouz<-lme(log(TripDurh) ~ success, 
+#                        random=~1 | id , 
+#                        data=trips.succ)
+# dursucc.lme <- ref_grid(dur.succ.lme.rouz, 
+#                         cov.keep= "success")
+# emmdursucc <- data.frame(emmeans(dursucc.lme, 
+#                                  spec= "success", 
+#                                  level= 0.95))
+# summary(dur.succ.lme.rouz)
+# anova(dur.succ.lme.rouz)
+# 
+# dursucc<-ggplot(data=emmdursucc,aes(x=success,y=exp(emmean)) ) +
+#     geom_point(data=trips.succ,aes(x=success,y=TripDurh,color=year),
+#                shape=16,alpha=0.3)+
+#     geom_line(size=1.5) +
+#     geom_ribbon(data=emmdursucc,aes( x=success,
+#                                      ymin=exp(lower.CL),
+#                                      ymax=exp(upper.CL)),
+#                 alpha=0.5,colour = NA) +
+#     scale_y_continuous(limits=c(0,200),
+#                        breaks=seq(0,200,50),
+#                        expand=c(0.001,0.001))+
+#     scale_x_continuous(limits=c(0, 0.7),
+#                        breaks=seq(0,0.7,0.2),
+#                        expand=c(0.001,0.001))+
+#     labs(y="Trip duration (h)",
+#          tag="e)",
+#          x="Fledging success") +
+#     scale_colour_manual(values=mycol[6:13]) +
+#     theme_light() +
+#     theme(#legend.position="none",
+#         panel.grid.minor = element_blank()) 
+# 
+# print(dursucc)
+# 
+# 
+# tot.succ.lme.rouz<-lme(log(TotalPathkm) ~ success, 
+#                        random=~1 | id , 
+#                        data=trips.succ)
+# totsucc.lme <- ref_grid(tot.succ.lme.rouz, 
+#                         cov.keep= "success")
+# emmtotsucc <- data.frame(emmeans(totsucc.lme, 
+#                                  spec= "success", 
+#                                  level= 0.95))
+# summary(dur.succ.lme.rouz)
+# anova(dur.succ.lme.rouz)
+# 
+# totsucc<-ggplot(data=emmtotsucc,aes(x=success,y=exp(emmean)) ) +
+#     geom_point(data=trips.succ,aes(x=success,y=TotalPathkm,color=year),
+#                shape=16,alpha=0.3)+
+#     geom_line(size=1.5) +
+#     geom_ribbon(data=emmtotsucc,aes( x=success,
+#                                     ymin=exp(lower.CL),
+#                                     ymax=exp(upper.CL)),
+#                 alpha=0.5,colour = NA) +
+#      geom_text(x=0.32, y=1225, label="***",size=textsize) +
+#     scale_y_continuous(limits=c(0,1400),
+#                        breaks=seq(0,1400,200),
+#                        expand=c(0.001,0.001))+
+#     scale_x_continuous(limits=c(0, 0.7),
+#                        breaks=seq(0,0.7,0.2),
+#                        expand=c(0.001,0.001))+
+#     labs(y="Total distance (km)",
+#          tag="f)",
+#          x="") +
+#     scale_colour_manual(values=mycol[6:13],
+#                         name="Year") +
+#     theme_light() +
+#     theme(#legend.position="none",
+#         panel.grid.minor = element_blank()) 
+# 
+# print(totsucc)
 
 
 
 tiff(here::here("outputs","Final figures",
-"Trip_correlations_2005-2023_colsuccday.tif"),
-     width=6000,height=6000,res=600,
+"Trip_correlations_2005-2023_colday.tif"),
+     width=6000,height=4000,res=600,
      compression="lzw")
 
 grid.arrange(arrangeGrob(distcol+theme(legend.position="none"),
                          durcol+theme(legend.position="none"),
                          totcol+theme(legend.position="none"),
-                         distsucc+theme(legend.position="none"),
-                         dursucc+theme(legend.position="none"),
-                         totsucc+theme(legend.position="none"),
+                         # distsucc+theme(legend.position="none"),
+                         # dursucc+theme(legend.position="none"),
+                         # totsucc+theme(legend.position="none"),
                          distdate+theme(legend.position="none"),
                          durdate+theme(legend.position="none"),
                          totpathdate+theme(legend.position="none"),
-                         nrow=3,ncol=3),
+                         nrow=2,ncol=3),
              mylegendyear, ncol=2,widths=c(1,0.1)) 
 dev.off()
 
