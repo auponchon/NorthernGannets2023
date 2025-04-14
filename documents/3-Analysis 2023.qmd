@@ -27,13 +27,13 @@ library(kableExtra)
 library(plotrix)
 library(readxl)
 library(beyonce)
-# library(FactoMineR)
-# library(corrr)
-# library(corrplot)
-# library(factoextra)
-# library(ggcorrplot)
+library(FactoMineR)
+library(corrr)
+library(corrplot)
+library(factoextra)
+library(ggcorrplot)
 
-source(here("R","trip_functions.R"))
+source(here::here("R","trip_functions.R"))
 
 mycolsex<-c("#F5D000FF","cyan3") #"deepskyblue3"
 mycol2.90<-viridis(n=2,begin=0,end=0.6,option="D")
@@ -46,11 +46,11 @@ trips<-trips_summary_ind(cleanLocs.rouzic23,
     dplyr::mutate(sero=as.factor(sero),
                    Yeux_colo=as.factor(Yeux_colo), 
                    Yeux_bino=as.factor(Yeux_bino)) %>% 
-     mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
+     dplyr::mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
        droplevels()
 
 #time in colony between 2 consecutive trips
-load(here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
+load(here::here("data","NewlyCreatedData","rawLocRouzic2023.Rdata"))
 land<-raw_rouzic_2023 %>% 
     land_summary_ind(.,colony=colo_coord_rouzic) %>% 
     dplyr::filter(LandDurh > 1 & 
@@ -59,35 +59,39 @@ land<-raw_rouzic_2023 %>%
      dplyr::mutate(sero=as.factor(sero),
                    Yeux_colo=as.factor(Yeux_colo), 
                    Yeux_bino=as.factor(Yeux_bino)) %>% 
-     mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
+     dplyr::mutate(day=as.numeric(as.Date(DateEnd) - as.Date("2023-07-02"))) %>% 
       droplevels()
 
 ##test to include body condition but not conclusive
 # #get the 4 numerical variables which are used as proxies of body condition 
-# mat<-trips %>% 
-#     dplyr::distinct(id,body_weight,wing, culmen,tarsus, .keep_all = F) %>% 
-#     dplyr::select(-id) %>% 
-#     scale(.)
-# 
-# #check correlation between variables
-# corr_matrix <- cor(mat)
-# corrplot(corr_matrix, method="number")
-# 
-# #pca to calculate a body condition index
-# data.pca <- princomp(mat)
-# summary(data.pca)
-# fviz_pca_var(data.pca, col.var = "cos2",
-#             gradient.cols = c("black", "orange", "green"),
-#             repel = TRUE)
-# 
-# #extract pca results
-# cond<-get_pca_ind(data.pca)
-# 
-# #extract the axis 1 values
-# IDS<-trips %>% 
-#       dplyr::distinct(id,body_weight,wing, culmen, .keep_all = F) %>% 
-#     dplyr::mutate(body_cond=cond$coord[,1])
-# 
+mat<-cleanLocs.rouzic23 %>%
+    dplyr::distinct(id,body_weight,wing, culmen,tarsus,
+                    .keep_all = F) %>%
+    dplyr::select(-id) %>%
+    scale(.)
+
+#check correlation between variables
+corr_matrix <- cor(mat)
+corrplot(corr_matrix, method="number")
+
+#pca to calculate a body condition index
+data.pca <- princomp(mat)
+summary(data.pca)
+factoextra::fviz_pca_var(data.pca, col.var = "cos2",
+            gradient.cols = c("black", "orange", "green"),
+            repel = TRUE)
+
+#extract pca results
+cond<-get_pca_ind(data.pca)
+
+#extract the axis 1 values
+IDS<-cleanLocs.rouzic23 %>%
+    dplyr::distinct(id,Yeux_bino,sex,body_weight,wing, culmen,tarsus,
+                    .keep_all = F) %>%
+    dplyr::mutate(body_cond=cond$coord[,1])
+
+lm<-glm(body_cond~Yeux_bino+sex, data=IDS)
+
 # #merge body condition index with rest of data
 # trips.cond<-trips %>% 
 #     left_join(.,IDS,by=c("id","body_weight","culmen","wing"))
@@ -98,8 +102,8 @@ land<-raw_rouzic_2023 %>%
 
 #Table summary for sample sizes on individuals and trips
 sum.ids<-trips %>% 
-    group_by(Yeux_bino) %>% 
-    summarize(Ids=length(unique(id)),
+    dplyr::group_by(Yeux_bino) %>% 
+    dplyr::summarize(Ids=length(unique(id)),
               Trips=length(unique(trip.id)),
               Debut=min(DateEnd),
               Fin=max(DateEnd)) 
@@ -107,11 +111,11 @@ sum.ids<-trips %>%
 kbl(sum.ids,caption="Sample size for trips") %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 
-#summary by individuals
+#summary by individuals with pale/dark iris
 nb.trips.sum<-trips %>% 
-    group_by(Yeux_bino,id) %>% 
+    dplyr::group_by(Yeux_bino,id) %>% 
     summarize(Trips=mean(difftime(max(DateEnd),min(DateStart),units="days"))) %>% 
-    summarize(cc=mean(Trips),
+    dplyr::summarize(cc=mean(Trips),
               SE=std.error(Trips, na.rm=T),
               Min=min(Trips),
               Max=max(Trips))
@@ -127,26 +131,36 @@ nb.trip.mean<-trips %>%
               max.nb.trip=max(NB.TRIP))
 
 
-#calculate mean and sd aby individuals
+#calculate mean and sd by individuals
 sum.id<- trips %>% 
-    group_by(id,Yeux_bino) %>% 
-    summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
+    dplyr::group_by(id,Yeux_bino,sex) %>% 
+    dplyr::summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
                      ~ mean(.x, na.rm = TRUE))) %>% 
     as.data.frame()
 
 #calculate mean and se for each iris colour group
 sum.trips1<- sum.id %>% 
-    group_by(Yeux_bino) %>% 
-    summarize(across(where(is.numeric), 
+    dplyr::group_by(Yeux_bino) %>% 
+    dplyr::summarize(across(where(is.numeric), 
                      list(Mean=mean,
                           SE=plotrix::std.error,
                           Min=min,
                           Max=max))) %>% 
-    mutate(across(where(is.numeric), round,digits=1))
+    dplyr::mutate(across(where(is.numeric), round,digits=1))
+
+#calculate mean and se for sex
+sum.sex1<- sum.id %>% 
+    dplyr::group_by(sex) %>% 
+    dplyr::summarize(across(where(is.numeric), 
+                     list(Mean=mean,
+                          SE=plotrix::std.error,
+                          Min=min,
+                          Max=max))) %>% 
+    dplyr::mutate(across(where(is.numeric), round,digits=1))
 
 #format table
 sum.trips<-sum.trips1 %>% 
-    group_by(Yeux_bino) %>% 
+    dplyr::group_by(Yeux_bino) %>% 
            dplyr::mutate(MeanDist=paste(Distmaxkm_Mean,Distmaxkm_SE,sep=" ± "),
                          DistRange=paste(Distmaxkm_Min,Distmaxkm_Max,sep=" - "),
                          MeanDur=paste(TripDurh_Mean,TripDurh_SE,sep=" ± "),
@@ -157,7 +171,7 @@ sum.trips<-sum.trips1 %>%
 
 #summarize data for nest attendance
 lands.ids<-land %>% 
-    summarize(Ids=length(unique(id)),
+    dplyr::summarize(Ids=length(unique(id)),
               Land=length(unique(onland.id)),
               Debut=min(DateEnd),
               Fin=max(DateEnd))
@@ -167,17 +181,17 @@ kbl(lands.ids,caption="Sample size for periods on land") %>%
 
 #summary by individuals
 land.id<- land %>% 
-    group_by(Yeux_bino,id) %>% 
-    summarize(Time= mean(LandDurh, na.rm=T)) %>% 
+    dplyr::group_by(Yeux_bino,id) %>% 
+    dplyr::summarize(Time= mean(LandDurh, na.rm=T)) %>% 
     as.data.frame()
 
 #summary by iris colour
 sum.lands<- land.id %>% 
-    group_by(Yeux_bino) %>% 
-    summarize(across(where(is.numeric), 
+    dplyr::group_by(Yeux_bino) %>% 
+    dplyr::summarize(across(where(is.numeric), 
                      list(mean=mean,
                           se=plotrix::std.error))) %>% 
-    mutate(across(where(is.numeric), round,digits=1)) 
+    dplyr::mutate(across(where(is.numeric), round,digits=1)) 
 
 #clean table for trips
 kbl(sum.trips,caption="Summary of trip characteristics",
@@ -197,28 +211,28 @@ kbl(sum.lands,caption="Summary of nest attendance",
 
 #calculate mean and se for each group of iris colour
 dist.colo<-summarySE(trips, measurevar="Distmaxkm", groupvars=c("Yeux_colo")) %>% 
-    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+    dplyr::mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
                                             "1dark1spotted",
                                             "1dark",
                                             "2spotted",
                                             "1spotted",
                                             "white"))
 dur.colo<-summarySE(trips, measurevar="TripDurh", groupvars=c("Yeux_colo"))%>% 
-    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+    dplyr::mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
                                             "1dark1spotted",
                                             "1dark",
                                             "2spotted",
                                             "1spotted",
                                             "white"))
 path.colo<-summarySE(trips, measurevar="TotalPathkm", groupvars=c("Yeux_colo"))%>% 
-    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+    dplyr::mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
                                             "1dark1spotted",
                                             "1dark",
                                             "2spotted",
                                             "1spotted",
                                             "white"))
 land.colo<-summarySE(land, measurevar="LandDurh", groupvars=c("Yeux_colo"))%>% 
-    mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
+    dplyr::mutate(Yeux_colof=fct_relevel(Yeux_colo, "2dark",
                                             "1dark1spotted",
                                             "1dark",
                                             "2spotted",

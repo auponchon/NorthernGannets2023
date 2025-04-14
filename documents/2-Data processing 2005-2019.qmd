@@ -20,9 +20,11 @@ library(kableExtra)
 
 source(here::here("R","trip_functions.R"))
 
-gps_type1<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type1"),
+gps_type1<-list.files(here::here("data","RawData",
+                                 "GPS ROUZIC","GPS_type1_2005_2006"),
                       full.names = T)
-name.file1<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type1"),
+name.file1<-list.files(here::here("data","RawData",
+                                  "GPS ROUZIC","GPS_type1_2005_2006"),
                       full.names = F) %>% 
            str_remove(., ".TXT")
 
@@ -71,9 +73,11 @@ dat1.2005.2006<-rbind(dat1.2005.2006,tot)
 ## 2. Data processing from log files 2005 and 2006
 
 ```{r}
-gps_type2<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type2"),
+gps_type2<-list.files(here::here("data","RawData",
+                                 "GPS ROUZIC","GPS_type2_2005_2006"),
                       full.names = T)
-name.file2<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type2"),
+name.file2<-list.files(here::here("data","RawData",
+                                  "GPS ROUZIC","GPS_type2_2005_2006"),
                       full.names = F) %>% 
            str_remove(., ".log") %>% 
           str_replace(.,"-",".")
@@ -113,9 +117,9 @@ dat2.2005.2006<-rbind(dat2.2005.2006,tot)
 
 ```{r}
 
-gps_type3<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type3"),
+gps_type3<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type3_2010"),
                       full.names = T)
-name.file3<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type3"),
+name.file3<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type3_2010"),
                       full.names = F) %>% 
            str_remove(., ".txt") %>% 
            str_remove(., "GPS-") %>% 
@@ -155,9 +159,11 @@ dat3.2010<-rbind(dat3.2010,tot)
 # 4. Data processing 2011-2012
 
 ```{r}
-gps_type4<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type4"),
+gps_type4<-list.files(here::here("data","RawData","GPS ROUZIC",
+                                 "GPS_type4_2011_2012"),
                       full.names = T)
-name.file4<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type4"),
+name.file4<-list.files(here::here("data","RawData","GPS ROUZIC",
+                                  "GPS_type4_2011_2012"),
                       full.names = F) %>% 
            str_remove(., ".csv") %>% 
            str_remove(., "-Rouzic") %>% 
@@ -201,9 +207,11 @@ dat4.2011.2012<-rbind(dat4.2011.2012,tot)
 # 5. Data processing 2013-2019
 
 ```{r}
-gps_type5<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type5"),
+gps_type5<-list.files(here::here("data","RawData","GPS ROUZIC",
+                                 "GPS_type5_2013-2019"),
                       full.names = T)
-name.file5<-list.files(here::here("data","RawData","GPS ROUZIC","GPS_type5"),
+name.file5<-list.files(here::here("data","RawData","GPS ROUZIC",
+                                  "GPS_type5_2013-2019"),
                       full.names = F) %>% 
            str_remove(., ".csv") %>% 
            str_remove(., "-Rouzic") %>% 
