@@ -845,7 +845,7 @@ kern.sex23<-ggplot()+
         coord_sf(xlim=ext.brit[c(1,2)],
                  ylim=ext.brit[c(3,4)],
                  expand=F) +
-        labs(tag="e)") +
+        labs(tag="b)") +
         scale_fill_manual(values=c("50F"="darkorchid4",
                                    "50M"="#0093AF",
                                    "90F"="darkorchid1",
@@ -898,7 +898,7 @@ print(kern.sex23)
  coord_sf(xlim=ext.brit[c(1,2)],
           ylim=ext.brit[c(3,4)],
           expand=F) +  
-  labs(tag="d)") +
+  labs(tag="a)") +
         scale_fill_manual(values=c("50+"="#E1595CFF",
                                    "50-"="#004616",
                                    "90+"="#ED9C97FF",

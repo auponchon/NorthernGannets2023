@@ -371,44 +371,44 @@ ul.task-list li input[type="checkbox"] {
 <pre><code>Linear mixed-effects model fit by REML
   Data: all.trips 
        AIC      BIC    logLik
-  3681.537 3766.214 -1824.768
+  7229.934 7314.611 -3598.967
 
 Random effects:
  Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.2606361 0.8006683
+        (Intercept) Residual
+StdDev:    1.001954 2.665317
 
-Fixed effects:  log(Distmaxkm) ~ year + Date 
+Fixed effects:  sqrt(Distmaxkm) ~ year + Date 
                 Value Std.Error   DF   t-value p-value
-(Intercept)  3.796662 0.3035908 1250 12.505852  0.0000
-year2006    -0.625028 0.2644396  219 -2.363596  0.0190
-year2010     0.069597 0.2237165  219  0.311096  0.7560
-year2011     0.184581 0.2579947  219  0.715444  0.4751
-year2012     0.155365 0.2641638  219  0.588139  0.5570
-year2013    -0.133214 0.3403148  219 -0.391443  0.6959
-year2014     0.403861 0.2936245  219  1.375434  0.1704
-year2015     0.414375 0.2644068  219  1.567188  0.1185
-year2016     0.090443 0.2620031  219  0.345197  0.7303
-year2017     0.106059 0.2827317  219  0.375121  0.7079
-year2019     0.078060 0.2548947  219  0.306245  0.7597
-year2022    -0.941067 0.2253760  219 -4.175540  0.0000
-year2023    -0.613006 0.2054155  219 -2.984227  0.0032
-Date         0.004092 0.0012993 1250  3.149198  0.0017
+(Intercept)  6.559882 1.0311824 1250  6.361515  0.0000
+year2006    -1.325596 0.8975228  219 -1.476949  0.1411
+year2010     1.147893 0.7625310  219  1.505372  0.1337
+year2011     0.961338 0.8724749  219  1.101851  0.2717
+year2012     1.023289 0.8938112  219  1.144860  0.2535
+year2013    -0.097349 1.1528939  219 -0.084439  0.9328
+year2014     2.221378 0.9929457  219  2.237159  0.0263
+year2015     2.452301 0.8951140  219  2.739652  0.0067
+year2016     0.950179 0.8873818  219  1.070767  0.2855
+year2017     0.410641 0.9653888  219  0.425363  0.6710
+year2019     0.890320 0.8653255  219  1.028884  0.3047
+year2022    -3.644988 0.7738314  219 -4.710313  0.0000
+year2023    -2.226440 0.7014195  219 -3.174191  0.0017
+Date         0.018088 0.0044252 1250  4.087540  0.0000
  Correlation: 
          (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
-year2006 -0.553                                                               
-year2010 -0.641  0.621                                                        
-year2011 -0.504  0.529  0.624                                                 
-year2012 -0.492  0.517  0.610  0.524                                          
-year2013 -0.355  0.396  0.468  0.405  0.395                                   
-year2014 -0.427  0.462  0.545  0.470  0.459  0.355                            
-year2015 -0.475  0.513  0.606  0.522  0.510  0.395  0.458                     
-year2016 -0.486  0.519  0.613  0.528  0.515  0.398  0.463  0.514              
-year2017 -0.436  0.478  0.565  0.488  0.477  0.369  0.428  0.475  0.480       
-year2019 -0.487  0.531  0.627  0.542  0.529  0.409  0.475  0.528  0.533  0.493
-year2022 -0.222  0.541  0.646  0.585  0.571  0.457  0.521  0.579  0.581  0.545
-year2023 -0.347  0.613  0.729  0.650  0.635  0.503  0.577  0.641  0.644  0.602
-Date     -0.784  0.142  0.152  0.065  0.064  0.015  0.038  0.043  0.051  0.030
+year2006 -0.550                                                               
+year2010 -0.635  0.614                                                        
+year2011 -0.502  0.527  0.619                                                 
+year2012 -0.491  0.515  0.605  0.524                                          
+year2013 -0.353  0.394  0.463  0.404  0.394                                   
+year2014 -0.426  0.460  0.541  0.470  0.459  0.355                            
+year2015 -0.473  0.511  0.600  0.522  0.509  0.393  0.458                     
+year2016 -0.484  0.516  0.607  0.527  0.514  0.397  0.462  0.513              
+year2017 -0.430  0.472  0.555  0.483  0.472  0.365  0.424  0.470  0.475       
+year2019 -0.484  0.527  0.620  0.539  0.527  0.407  0.473  0.525  0.530  0.486
+year2022 -0.214  0.530  0.630  0.576  0.562  0.449  0.513  0.569  0.571  0.532
+year2023 -0.339  0.604  0.715  0.644  0.628  0.497  0.571  0.634  0.637  0.590
+Date     -0.787  0.142  0.152  0.066  0.065  0.015  0.038  0.043  0.052  0.030
          yr2019 yr2022 yr2023
 year2006                     
 year2010                     
@@ -420,22 +420,22 @@ year2015
 year2016                     
 year2017                     
 year2019                     
-year2022  0.603              
-year2023  0.667  0.872       
-Date      0.037 -0.377 -0.282
+year2022  0.591              
+year2023  0.657  0.852       
+Date      0.037 -0.374 -0.282
 
 Standardized Within-Group Residuals:
        Min         Q1        Med         Q3        Max 
--4.4531780 -0.3500726  0.1938501  0.5908291  2.3407102 
+-3.1267158 -0.5694726  0.0493682  0.6114533  3.6248584 
 
 Number of Observations: 1483
 Number of Groups: 232 </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF   F-value p-value
-(Intercept)     1  1250 13899.384  &lt;.0001
-year           12   219     6.630  &lt;.0001
-Date            1  1250     9.917  0.0017</code></pre>
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1250 5145.117  &lt;.0001
+year           12   219    9.673  &lt;.0001
+Date            1  1250   16.708  &lt;.0001</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -451,48 +451,55 @@ Date            1  1250     9.917  0.0017</code></pre>
 </figure>
 </div>
 </div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear mixed-effects model fit by REML
   Data: all.trips 
-       AIC     BIC    logLik
-  3570.583 3655.26 -1769.291
+       AIC      BIC    logLik
+  5329.745 5414.423 -2648.873
 
 Random effects:
  Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.2635798 0.7696693
+        (Intercept) Residual
+StdDev:    0.482231 1.400425
 
-Fixed effects:  log(TripDurh) ~ year + Date 
+Fixed effects:  sqrt(TripDurh) ~ year + Date 
                  Value Std.Error   DF   t-value p-value
-(Intercept)  0.6802541 0.2939189 1250  2.314428  0.0208
-year2006     0.0522181 0.2558208  219  0.204120  0.8384
-year2010     0.4038357 0.2167237  219  1.863367  0.0637
-year2011     0.3792299 0.2492747  219  1.521333  0.1296
-year2012     0.3493114 0.2552802  219  1.368345  0.1726
-year2013     0.2217210 0.3290038  219  0.673916  0.5011
-year2014     0.7776521 0.2836976  219  2.741130  0.0066
-year2015     0.6014150 0.2555600  219  2.353322  0.0195
-year2016     0.3923245 0.2532752  219  1.549005  0.1228
-year2017     0.2219401 0.2740750  219  0.809779  0.4189
-year2019     0.1920029 0.2465998  219  0.778601  0.4371
-year2022    -0.8054287 0.2188837  219 -3.679711  0.0003
-year2023    -0.5623274 0.1991229  219 -2.824022  0.0052
-Date         0.0109607 0.0012595 1250  8.702783  0.0000
+(Intercept) -0.7623103 0.5352017 1250 -1.424342  0.1546
+year2006     0.4690514 0.4658045  219  1.006971  0.3151
+year2010     0.9838197 0.3946773  219  2.492719  0.0134
+year2011     0.7875125 0.4538228  219  1.735286  0.0841
+year2012     0.7640833 0.4647654  219  1.644019  0.1016
+year2013     0.5653454 0.5990146  219  0.943792  0.3463
+year2014     1.7717342 0.5164917  219  3.430325  0.0007
+year2015     1.3868103 0.4652841  219  2.980567  0.0032
+year2016     0.9569062 0.4611320  219  2.075124  0.0391
+year2017     0.3848288 0.4991550  219  0.770961  0.4416
+year2019     0.4903041 0.4490179  219  1.091948  0.2761
+year2022    -1.7301063 0.3987215  219 -4.339135  0.0000
+year2023    -1.1286321 0.3626494  219 -3.112185  0.0021
+Date         0.0260312 0.0022936 1250 11.349371  0.0000
  Correlation: 
          (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
 year2006 -0.552                                                               
-year2010 -0.639  0.619                                                        
-year2011 -0.503  0.528  0.623                                                 
+year2010 -0.639  0.618                                                        
+year2011 -0.503  0.528  0.622                                                 
 year2012 -0.492  0.516  0.608  0.524                                          
 year2013 -0.354  0.395  0.466  0.404  0.395                                   
 year2014 -0.427  0.461  0.544  0.470  0.459  0.355                            
 year2015 -0.474  0.512  0.604  0.522  0.510  0.394  0.458                     
-year2016 -0.485  0.518  0.611  0.528  0.515  0.398  0.463  0.513              
-year2017 -0.434  0.476  0.562  0.486  0.475  0.367  0.427  0.474  0.478       
-year2019 -0.486  0.530  0.625  0.541  0.528  0.408  0.474  0.527  0.532  0.491
-year2022 -0.219  0.537  0.640  0.582  0.568  0.454  0.519  0.576  0.578  0.540
-year2023 -0.344  0.610  0.724  0.648  0.633  0.501  0.575  0.638  0.642  0.598
-Date     -0.785  0.142  0.152  0.066  0.064  0.015  0.038  0.043  0.051  0.030
+year2016 -0.485  0.518  0.611  0.528  0.515  0.398  0.462  0.513              
+year2017 -0.434  0.476  0.561  0.486  0.475  0.367  0.427  0.474  0.478       
+year2019 -0.486  0.530  0.625  0.541  0.528  0.408  0.474  0.527  0.532  0.490
+year2022 -0.218  0.537  0.640  0.581  0.568  0.454  0.518  0.575  0.577  0.540
+year2023 -0.343  0.609  0.723  0.648  0.633  0.501  0.575  0.638  0.641  0.598
+Date     -0.786  0.142  0.152  0.066  0.064  0.015  0.038  0.043  0.052  0.030
          yr2019 yr2022 yr2023
 year2006                     
 year2010                     
@@ -505,28 +512,21 @@ year2016
 year2017                     
 year2019                     
 year2022  0.599              
-year2023  0.663  0.866       
+year2023  0.663  0.865       
 Date      0.037 -0.376 -0.282
 
 Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--3.7895256 -0.5480071  0.2000117  0.6295943  2.9851419 
+        Min          Q1         Med          Q3         Max 
+-2.63943731 -0.65409150  0.04574084  0.53326280  5.75330815 
 
 Number of Observations: 1483
 Number of Groups: 232 </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            numDF denDF  F-value p-value
-(Intercept)     1  1250 5840.982  &lt;.0001
-year           12   219    2.473  0.0047
-Date            1  1250   75.738  &lt;.0001</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
+(Intercept)     1  1250 4188.693  &lt;.0001
+year           12   219    2.616  0.0028
+Date            1  1250  128.808  &lt;.0001</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -534,76 +534,6 @@ Date            1  1250   75.738  &lt;.0001</code></pre>
 <p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed-effects model fit by REML
-  Data: all.trips 
-       AIC      BIC    logLik
-  3872.835 3957.513 -1920.418
-
-Random effects:
- Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:    0.276505 0.8547108
-
-Fixed effects:  log(TotalPathkm) ~ year + Date 
-                Value Std.Error   DF   t-value p-value
-(Intercept)  4.820298 0.3237999 1250 14.886657  0.0000
-year2006    -0.818386 0.2820784  219 -2.901272  0.0041
-year2010    -0.022938 0.2386006  219 -0.096133  0.9235
-year2011     0.169854 0.2752450  219  0.617102  0.5378
-year2012     0.123220 0.2818207  219  0.437227  0.6624
-year2013    -0.120482 0.3630444  219 -0.331867  0.7403
-year2014     0.500832 0.3132575  219  1.598786  0.1113
-year2015     0.362348 0.2820742  219  1.284584  0.2003
-year2016    -0.000944 0.2795048  219 -0.003377  0.9973
-year2017     0.006976 0.3015172  219  0.023136  0.9816
-year2019    -0.144882 0.2718956  219 -0.532860  0.5947
-year2022    -1.381777 0.2402970  219 -5.750288  0.0000
-year2023    -1.050179 0.2190646  219 -4.793922  0.0000
-Date         0.005818 0.0013855 1250  4.199067  0.0000
- Correlation: 
-         (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
-year2006 -0.553                                                               
-year2010 -0.642  0.621                                                        
-year2011 -0.504  0.529  0.624                                                 
-year2012 -0.492  0.517  0.610  0.524                                          
-year2013 -0.355  0.396  0.468  0.405  0.395                                   
-year2014 -0.427  0.462  0.546  0.470  0.459  0.355                            
-year2015 -0.475  0.513  0.606  0.522  0.510  0.395  0.458                     
-year2016 -0.486  0.519  0.613  0.528  0.516  0.398  0.463  0.514              
-year2017 -0.437  0.479  0.565  0.488  0.477  0.369  0.428  0.476  0.480       
-year2019 -0.487  0.531  0.628  0.542  0.529  0.409  0.475  0.528  0.533  0.493
-year2022 -0.223  0.542  0.646  0.585  0.572  0.457  0.522  0.579  0.581  0.546
-year2023 -0.348  0.613  0.729  0.651  0.636  0.503  0.577  0.641  0.645  0.603
-Date     -0.784  0.142  0.152  0.065  0.064  0.015  0.038  0.043  0.051  0.030
-         yr2019 yr2022 yr2023
-year2006                     
-year2010                     
-year2011                     
-year2012                     
-year2013                     
-year2014                     
-year2015                     
-year2016                     
-year2017                     
-year2019                     
-year2022  0.604              
-year2023  0.667  0.873       
-Date      0.037 -0.377 -0.282
-
-Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--4.3402356 -0.4296603  0.1616030  0.5917910  2.5585747 
-
-Number of Observations: 1483
-Number of Groups: 232 </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF   F-value p-value
-(Intercept)     1  1250 19402.205  &lt;.0001
-year           12   219    11.080  &lt;.0001
-Date            1  1250    17.632  &lt;.0001</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -619,6 +549,97 @@ Date            1  1250    17.632  &lt;.0001</code></pre>
 </figure>
 </div>
 </div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: all.trips 
+       AIC     BIC    logLik
+  9049.973 9134.65 -4508.986
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept) Residual
+StdDev:    1.867132 4.951481
+
+Fixed effects:  sqrt(TotalPathkm) ~ year + Date 
+                 Value Std.Error   DF   t-value p-value
+(Intercept)  11.124437 1.9165012 1250  5.804555  0.0000
+year2006     -4.103641 1.6681435  219 -2.460005  0.0147
+year2010      0.848917 1.4173915  219  0.598929  0.5498
+year2011      1.463439 1.6214586  219  0.902545  0.3678
+year2012      1.426401 1.6611318  219  0.858692  0.3914
+year2013     -0.152786 2.1426950  219 -0.071305  0.9432
+year2014      4.989379 1.8453481  219  2.703760  0.0074
+year2015      4.010605 1.6635744  219  2.410836  0.0167
+year2016      0.936529 1.6492216  219  0.567861  0.5707
+year2017     -0.413391 1.7945238  219 -0.230362  0.8180
+year2019     -0.519500 1.6083140  219 -0.323009  0.7470
+year2022    -10.254458 1.4386299  219 -7.127934  0.0000
+year2023     -7.704764 1.3038474  219 -5.909253  0.0000
+Date          0.046401 0.0082247 1250  5.641738  0.0000
+ Correlation: 
+         (Intr) yr2006 yr2010 yr2011 yr2012 yr2013 yr2014 yr2015 yr2016 yr2017
+year2006 -0.550                                                               
+year2010 -0.635  0.614                                                        
+year2011 -0.502  0.527  0.619                                                 
+year2012 -0.491  0.514  0.605  0.524                                          
+year2013 -0.353  0.394  0.463  0.404  0.394                                   
+year2014 -0.426  0.460  0.541  0.470  0.459  0.355                            
+year2015 -0.473  0.511  0.600  0.522  0.509  0.393  0.458                     
+year2016 -0.484  0.516  0.607  0.527  0.514  0.397  0.462  0.513              
+year2017 -0.430  0.472  0.555  0.483  0.472  0.365  0.424  0.470  0.475       
+year2019 -0.484  0.527  0.620  0.539  0.527  0.407  0.473  0.525  0.530  0.486
+year2022 -0.214  0.530  0.630  0.576  0.562  0.449  0.513  0.569  0.571  0.531
+year2023 -0.338  0.604  0.715  0.644  0.628  0.497  0.571  0.633  0.637  0.590
+Date     -0.787  0.142  0.152  0.066  0.065  0.015  0.038  0.043  0.052  0.030
+         yr2019 yr2022 yr2023
+year2006                     
+year2010                     
+year2011                     
+year2012                     
+year2013                     
+year2014                     
+year2015                     
+year2016                     
+year2017                     
+year2019                     
+year2022  0.591              
+year2023  0.657  0.852       
+Date      0.037 -0.374 -0.282
+
+Standardized Within-Group Residuals:
+         Min           Q1          Med           Q3          Max 
+-3.197870077 -0.630533094  0.005466687  0.572260259  3.909196194 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1250 4732.895  &lt;.0001
+year           12   219   17.843  &lt;.0001
+Date            1  1250   31.829  &lt;.0001</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/LMM%20on%20trip%20mean-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 </div>
 </section>
 <section id="correlation-with-colony-size" class="level1">
@@ -627,33 +648,33 @@ Date            1  1250    17.632  &lt;.0001</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear mixed-effects model fit by REML
   Data: trips.col 
-       AIC      BIC    logLik
-  3705.831 3727.033 -1848.916
+      AIC      BIC   logLik
+  7301.24 7322.442 -3646.62
 
 Random effects:
  Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:    0.361734 0.8022027
+        (Intercept) Residual
+StdDev:    1.480449 2.671349
 
-Fixed effects:  log(Distmaxkm) ~ count 
-               Value Std.Error   DF   t-value p-value
-(Intercept) 3.535271 0.1837420 1251 19.240404       0
-count       0.000046 0.0000102  230  4.464609       0
+Fixed effects:  sqrt(Distmaxkm) ~ count 
+               Value Std.Error   DF  t-value p-value
+(Intercept) 5.620621 0.7182874 1251 7.825031       0
+count       0.000221 0.0000391  230 5.650010       0
  Correlation: 
       (Intr)
-count -0.973
+count -0.975
 
 Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--4.3155360 -0.3592711  0.2080641  0.5624456  2.2249092 
+        Min          Q1         Med          Q3         Max 
+-3.05526292 -0.57341887  0.08905355  0.56483644  3.72674593 
 
 Number of Observations: 1483
 Number of Groups: 232 </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF   F-value p-value
-(Intercept)     1  1251 10285.005  &lt;.0001
-count           1   230    19.933  &lt;.0001</code></pre>
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1251 3651.086  &lt;.0001
+count           1   230   31.923  &lt;.0001</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -661,37 +682,6 @@ count           1   230    19.933  &lt;.0001</code></pre>
 <p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed-effects model fit by REML
-  Data: trips.col 
-       AIC    BIC    logLik
-  3629.298 3650.5 -1810.649
-
-Random effects:
- Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.2987545 0.7876794
-
-Fixed effects:  log(TripDurh) ~ count 
-                Value Std.Error   DF   t-value p-value
-(Intercept) 2.2710328 0.1590813 1251 14.275925  0.0000
-count       0.0000274 0.0000090  230  3.044876  0.0026
- Correlation: 
-      (Intr)
-count -0.97 
-
-Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--3.5594646 -0.6079870  0.1830216  0.5953912  3.2072909 
-
-Number of Observations: 1483
-Number of Groups: 232 </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF  F-value p-value
-(Intercept)     1  1251 5083.944  &lt;.0001
-count           1   230    9.271  0.0026</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -703,33 +693,33 @@ count           1   230    9.271  0.0026</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear mixed-effects model fit by REML
   Data: trips.col 
-       AIC     BIC    logLik
-  3922.078 3943.28 -1957.039
+      AIC      BIC   logLik
+  5456.24 5477.442 -2724.12
 
 Random effects:
  Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.4267806 0.8587802
+        (Intercept) Residual
+StdDev:   0.5408911 1.460947
 
-Fixed effects:  log(TotalPathkm) ~ count 
-               Value  Std.Error   DF  t-value p-value
-(Intercept) 4.201333 0.21187562 1251 19.82924       0
-count       0.000073 0.00001165  230  6.23699       0
+Fixed effects:  sqrt(TripDurh) ~ count 
+               Value  Std.Error   DF   t-value p-value
+(Intercept) 3.474699 0.29012502 1251 11.976557  0.0000
+count       0.000044 0.00001646  230  2.686467  0.0077
  Correlation: 
       (Intr)
-count -0.974
+count -0.97 
 
 Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--4.3045559 -0.4332902  0.1753129  0.5800464  2.7507704 
+        Min          Q1         Med          Q3         Max 
+-2.36945180 -0.68640811  0.02213288  0.49539606  6.21479059 
 
 Number of Observations: 1483
 Number of Groups: 232 </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF F-value p-value
-(Intercept)     1  1251 13017.4  &lt;.0001
-count           1   230    38.9  &lt;.0001</code></pre>
+<pre><code>            numDF denDF  F-value p-value
+(Intercept)     1  1251 3606.059  &lt;.0001
+count           1   230    7.217  0.0077</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
@@ -738,125 +728,63 @@ count           1   230    38.9  &lt;.0001</code></pre>
 </figure>
 </div>
 </div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed-effects model fit by REML
+  Data: trips.col 
+       AIC      BIC    logLik
+  9175.564 9196.766 -4583.782
+
+Random effects:
+ Formula: ~1 | id
+        (Intercept) Residual
+StdDev:    3.281126 4.974982
+
+Fixed effects:  sqrt(TotalPathkm) ~ count 
+               Value Std.Error   DF  t-value p-value
+(Intercept) 6.323963 1.5425998 1251 4.099549       0
+count       0.000623 0.0000827  230 7.525460       0
+ Correlation: 
+      (Intr)
+count -0.978
+
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-3.06201374 -0.60668846  0.01397897  0.55686375  4.18998303 
+
+Number of Observations: 1483
+Number of Groups: 232 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            numDF denDF   F-value p-value
+(Intercept)     1  1251 2959.6338  &lt;.0001
+count           1   230   56.6326  &lt;.0001</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20colony%20size-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 </div>
 </section>
 <section id="correlation-with-breeding-success" class="level1">
 <h1>6. Correlation with breeding success</h1>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed-effects model fit by REML
-  Data: trips.succ 
-       AIC      BIC    logLik
-  3239.655 3260.418 -1615.828
-
-Random effects:
- Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.3399619 0.7883044
-
-Fixed effects:  log(Distmaxkm) ~ success 
-               Value Std.Error   DF  t-value p-value
-(Intercept) 3.938880 0.1103580 1200 35.69183  0.0000
-success     0.751021 0.2275427  127  3.30057  0.0013
- Correlation: 
-        (Intr)
-success -0.896
-
-Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--4.4204631 -0.4073464  0.1921459  0.6218027  2.2335923 
-
-Number of Observations: 1329
-Number of Groups: 129 </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF  F-value p-value
-(Intercept)     1  1200 7556.120  &lt;.0001
-success         1   127   10.894  0.0013</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20breeding%20success-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed-effects model fit by REML
-  Data: trips.succ 
-     AIC      BIC   logLik
-  3256.3 3277.063 -1624.15
-
-Random effects:
- Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.3308879 0.7942145
-
-Fixed effects:  log(TripDurh) ~ success 
-                Value Std.Error   DF  t-value p-value
-(Intercept) 2.6272632 0.1084276 1200 24.23058  0.0000
-success     0.2681049 0.2235662  127  1.19922  0.2327
- Correlation: 
-        (Intr)
-success -0.895
-
-Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--3.5885191 -0.6270055  0.1605802  0.6153378  3.1565312 
-
-Number of Observations: 1329
-Number of Groups: 129 </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF  F-value p-value
-(Intercept)     1  1200 3214.646  &lt;.0001
-success         1   127    1.438  0.2327</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20breeding%20success-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Linear mixed-effects model fit by REML
-  Data: trips.succ 
-     AIC      BIC   logLik
-  3256.3 3277.063 -1624.15
-
-Random effects:
- Formula: ~1 | id
-        (Intercept)  Residual
-StdDev:   0.3308879 0.7942145
-
-Fixed effects:  log(TripDurh) ~ success 
-                Value Std.Error   DF  t-value p-value
-(Intercept) 2.6272632 0.1084276 1200 24.23058  0.0000
-success     0.2681049 0.2235662  127  1.19922  0.2327
- Correlation: 
-        (Intr)
-success -0.895
-
-Standardized Within-Group Residuals:
-       Min         Q1        Med         Q3        Max 
--3.5885191 -0.6270055  0.1605802  0.6153378  3.1565312 
-
-Number of Observations: 1329
-Number of Groups: 129 </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>            numDF denDF  F-value p-value
-(Intercept)     1  1200 3214.646  &lt;.0001
-success         1   127    1.438  0.2327</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="4-Comparison-all-trips-2005-2023_files/figure-html/correlation%20breeding%20success-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
 <div class="cell-output cell-output-stdout">
 <pre><code>png 
   2 </code></pre>
