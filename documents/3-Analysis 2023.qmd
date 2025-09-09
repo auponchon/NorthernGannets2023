@@ -253,7 +253,7 @@ eyecolordist<-ggplot(dist.colo, aes(x=Yeux_colof, y=Distmaxkm),group=Yeux_colof)
                        expand=c(0.001,0.001))+
     scale_color_manual(values=col, name="Iris colour") +
       labs(y="Maximal distance to the colony (km)",tag="a)",x="") +
-    theme_bw()
+    theme_bw(axis.text=element_text(size=10))
 
 eyecolordur<-ggplot(dur.colo, aes(x=Yeux_colof, y=TripDurh),group=Yeux_colof) +
      geom_point(aes(color=Yeux_colof)) + 
@@ -266,7 +266,7 @@ eyecolordur<-ggplot(dur.colo, aes(x=Yeux_colof, y=TripDurh),group=Yeux_colof) +
                        expand=c(0.001,0.001)) +
     scale_color_manual(values=col, name="Iris colour") +
       labs(y="Trip duration (h)",tag="b)",x="") +
-    theme_bw()
+    theme_bw(axis.text=element_text(size=10))
 
 eyecolorpath<-ggplot(path.colo, aes(x=Yeux_colof, y=TotalPathkm),group=Yeux_colof) +
      geom_point(aes(color=Yeux_colof)) + 
@@ -279,7 +279,7 @@ eyecolorpath<-ggplot(path.colo, aes(x=Yeux_colof, y=TotalPathkm),group=Yeux_colo
                        expand=c(0.001,0.001)) +
     scale_color_manual(values=col, name="Iris colour") +
       labs(y="Total distance travelled (km)",tag="c)",x="") +
-    theme_bw()
+    theme_bw(axis.text=element_text(size=12))
 
 eyecolorland<-ggplot(land.colo, aes(x=Yeux_colof, y=LandDurh),group=Yeux_colof) +
      geom_point(aes(color=Yeux_colof)) + 
@@ -292,7 +292,7 @@ eyecolorland<-ggplot(land.colo, aes(x=Yeux_colof, y=LandDurh),group=Yeux_colof) 
                        expand=c(0.001,0.001)) +
     scale_color_manual(values=col, name="Iris colour") +
       labs(y="Nest attendance (h)",tag="a)",x="") +
-    theme_bw()
+    theme_bw(axis.text=element_text(size=12))
 
 mylegendcoloreye<-g_legend(eyecolordist)
 
@@ -483,6 +483,7 @@ geom_point(alpha=0.4) +
                               'M:0'='M normal','M:1'='M dark'))  +
      theme_light()+
     theme(#legend.position="none",
+        axis.text=element_text(size=12),
           panel.grid.minor = element_blank()) 
 print(distlmmsex)
 
@@ -511,6 +512,7 @@ geom_point(alpha=0.4) +
                               'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(#legend.position="none",
+        axis.text=element_text(size=12),
           panel.grid.minor = element_blank()) 
     
 
@@ -539,6 +541,7 @@ geom_point(alpha=0.4) +
                               'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(#legend.position="none",
+        axis.text=element_text(size=12),
           panel.grid.minor = element_blank()) 
     
 
@@ -566,11 +569,12 @@ geom_point(alpha=0.4) +
                      labels=c('F:0'='F normal','F:1'='F dark',
                               'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
-    theme(panel.grid.minor = element_blank()) 
+    theme(panel.grid.minor = element_blank(),
+          axis.text=element_text(size=12)) 
     
 mylegendlmmsero<-g_legend(distlmmsex)
 
-tiff(here::here("outputs","Final figures","LMM_predictions_interac_2023.tif"),
+tiff(here::here("outputs","Final figures","LMM_predictions_interac_2023_update.tif"),
      width=7000,
      height=4000,
      res=600,

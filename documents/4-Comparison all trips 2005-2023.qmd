@@ -62,7 +62,7 @@ rouz22<-cleanLocs.rouzic %>%
 rouz.all1<-rbind(rouz05.19,rouz22,rouz23) 
 
 
-metadata<-read_excel(here("data","RawData","metadata_2005-2023.xlsx"),
+metadata<-read_excel(here::here("data","RawData","metadata_2005-2023.xlsx"),
               sheet="Feuil1",col_names = T) 
 
 rouz.all<-rouz.all1%>% 
@@ -103,8 +103,8 @@ save(rouz.all,file=here::here("data","NewlyCreatedData","raw_rouzic_05_23.RData"
 
 #Table summary
 sum.ids<-all.trips %>% 
-    group_by(year) %>% 
-    summarize(Ids=length(unique(id)),
+    dplyr::group_by(year) %>% 
+     dplyr::summarize(Ids=length(unique(id)),
               Trips=length(unique(trip.id)),
               Debut=min(DateStart),
               Fin=max(DateEnd))
@@ -115,19 +115,19 @@ kbl(sum.ids,caption="Sample size for trips") %>%
 
 
 sum.id<- all.trips %>% 
-    group_by(year,id) %>% 
-    summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
+     dplyr::group_by(year,id) %>% 
+     dplyr::summarize(across(c(Distmaxkm, TripDurh, TotalPathkm), 
                      ~ mean(.x, na.rm = TRUE))) %>% 
     as.data.frame()
 
 sum.trips1<- sum.id %>% 
-    group_by(year) %>% 
-    summarize(across(where(is.numeric), 
+     dplyr::group_by(year) %>% 
+     dplyr::summarize(across(where(is.numeric), 
                      list(Mean=mean,
                           SE=plotrix::std.error,
                           Min=min,
                           Max=max))) %>% 
-    mutate(across(where(is.numeric), round,digits=1))
+     dplyr::mutate(across(where(is.numeric), round,digits=1))
 
 
 sum.trips<-sum.trips1 %>% 
@@ -229,7 +229,9 @@ colsize<-ggplot(data=nb.ind) +
     scale_colour_manual(values=colorsize, name="") +
     labs(tag="a)") +
     theme_light() +
-    theme(panel.grid.minor = element_blank()) 
+    theme(panel.grid.minor = element_blank(),
+           axis.title=element_text(size=12),
+          axis.text=element_text(size=12)) 
 print(colsize)
 
 
@@ -253,7 +255,9 @@ dist.year<-ggplot(summytrips,aes(x=YearN)) +
      scale_colour_manual(values=mycol2, name="Year")  +
     theme_light() +
     theme(#legend.position="none",
-        panel.grid.minor = element_blank()) 
+        panel.grid.minor = element_blank(),
+         axis.title=element_text(size=12),
+        axis.text=element_text(size=12)) 
 print(dist.year)
 
 
@@ -277,7 +281,9 @@ dur.year<-ggplot(summytrips,aes(x=YearN)) +
     scale_colour_manual(values=mycol2, name="Year")  +
     theme_light() +
     theme(#legend.position="none",
-        panel.grid.minor = element_blank()) 
+        panel.grid.minor = element_blank(),
+         axis.title=element_text(size=12),
+        axis.text=element_text(size=12)) 
 print(dur.year)
 
 #total distance travelled
@@ -300,14 +306,16 @@ tot.year<-ggplot(summytrips,aes(x=YearN)) +
     scale_colour_manual(values=mycol2, name="Year")  +
     theme_light() +
     theme(#legend.position="none",
+        axis.text=element_text(size=12),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 print(tot.year)
 
 mylegendyear<-g_legend(tot.year)
 
 
- tiff(here("outputs","Final figures",
-           "Trip_characteristics_2005_2023_mean_colosize.tif"),
+ tiff(here::here("outputs","Final figures",
+           "Trip_characteristics_2005_2023_mean_colosize_update.tif"),
       width=6000,
       height=3500,
       res=600,
@@ -402,6 +410,8 @@ distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=(emmean)^2), group=year ) +
   scale_fill_manual(values=mycol) +
   theme_light() +
   theme(#legend.position="none",
+      axis.text=element_text(size=11),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 
 print(distdate)
@@ -458,6 +468,8 @@ durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=(emmean)^2), group=year ) +
   scale_fill_manual(values=mycol) +
   theme_light() +
   theme(#legend.position="none",
+      axis.text=element_text(size=11),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 
 print(durdate)
@@ -515,6 +527,8 @@ totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=(emmean)^2),
   scale_fill_manual(values=mycol,name='Year') +
   theme_light() +
   theme(#legend.position="none",
+     axis.text=element_text(size=11),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 
 print(totpathdate)
@@ -579,7 +593,7 @@ distcol<-ggplot(data=emmdistcol,aes(x=count,y=(emmean)^2) ) +
     scale_y_continuous(limits=c(0,400),
                        breaks=seq(0,400,100),
                        expand=c(0.01,0.01))+
-    scale_x_continuous(limits=c(11000, 23000),
+    scale_x_continuous(limits=c(11000, 22000),
                        breaks=seq(11000,23000,3000),
                        expand=c(0.01,0.01))+
     labs(y="Maximal distance (km)",
@@ -589,6 +603,8 @@ distcol<-ggplot(data=emmdistcol,aes(x=count,y=(emmean)^2) ) +
     # scale_fill_manual(values=mycol) +
     theme_light() +
     theme(#legend.position="none",
+       axis.text=element_text(size=11),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 
 print(distcol)
@@ -621,7 +637,7 @@ durcol<-ggplot(data=emmdurcol,aes(x=count,y=(emmean)^2) ) +
     scale_y_continuous(limits=c(0,200),
                        breaks=seq(0,200,50),
                        expand=c(0.01,0.01))+
-    scale_x_continuous(limits=c(11000, 23000),
+    scale_x_continuous(limits=c(11000, 22000),
                        breaks=seq(11000,23000,3000),
                        expand=c(0.01,0.01))+
     labs(y="Trip duration (h)",
@@ -630,6 +646,8 @@ durcol<-ggplot(data=emmdurcol,aes(x=count,y=(emmean)^2) ) +
     scale_colour_manual(values=mycol) +
     theme_light() +
     theme(#legend.position="none",
+        axis.text=element_text(size=11),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 
 print(durcol)
@@ -661,7 +679,7 @@ totcol<-ggplot(data=emmtotcol,aes(x=count,y=(emmean)^2) ) +
     scale_y_continuous(limits=c(0,1400),
                        breaks=seq(0,1400,200),
                        expand=c(0.01,0.01))+
-    scale_x_continuous(limits=c(11000, 23000),
+    scale_x_continuous(limits=c(11000, 22000),
                        breaks=seq(11000,23000,3000),
                        expand=c(0.01,0.01))+
     labs(y="Total distance (km)",
@@ -671,6 +689,8 @@ totcol<-ggplot(data=emmtotcol,aes(x=count,y=(emmean)^2) ) +
                         name="Year") +
     theme_light() +
     theme(#legend.position="none",
+        axis.text=element_text(size=11),
+         axis.title=element_text(size=12),
         panel.grid.minor = element_blank()) 
 
 print(totcol)
@@ -813,8 +833,8 @@ print(totcol)
 
 
 tiff(here::here("outputs","Final figures",
-"Trip_correlations_2005-2023_colday.tif"),
-     width=6000,height=4000,res=600,
+"Trip_correlations_2005-2023_colday_update.tif"),
+     width=7000,height=4000,res=600,
      compression="lzw")
 
 grid.arrange(arrangeGrob(distcol+theme(legend.position="none"),
