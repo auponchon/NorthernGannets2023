@@ -401,10 +401,10 @@ distdate<-ggplot(data=emmrouzdatedist,aes(x=Date,y=(emmean)^2), group=year ) +
                      breaks=seq(0,400,100),
                      expand=c(0.01,0.01))+
     scale_x_continuous(limits=c(150,292),
-                       breaks=seq(150,300,25),
+                       breaks=seq(150,300,30),
                        expand=c(0.001,0.001),
-                       labels=c("30/05","24/06","19/07",
-                       "13/08","07/09","02/10","27/10")) +
+                       labels=c("30/05","29/06","29/07",
+                       "28/08","27/09","27/10")) +
   labs(y="Maximal distance (km)",tag="d)",x="") +
   scale_colour_manual(values=mycol) +
   scale_fill_manual(values=mycol) +
@@ -459,10 +459,10 @@ durdate<-ggplot(data=emmrouzdatedur,aes(x=Date,y=(emmean)^2), group=year ) +
                      breaks=seq(0,200,50),
                      expand=c(0.01,0.01))+
     scale_x_continuous(limits=c(150,292),
-                       breaks=seq(150,300,25),
+                       breaks=seq(150,300,30),
                        expand=c(0.001,0.001),
-                       labels=c("30/05","24/06","19/07",
-                       "13/08","07/09","02/10","27/10")) +
+                         labels=c("30/05","29/06","29/07",
+                       "28/08","27/09","27/10")) +
   labs(y="Trip duration (h)",tag="e)",x="Date") +
   scale_colour_manual(values=mycol) +
   scale_fill_manual(values=mycol) +
@@ -518,10 +518,10 @@ totpathdate<-ggplot(data=emmrouzdatetotpath,aes(x=Date,y=(emmean)^2),
                      breaks=seq(0,2000,400),
                      expand=c(0.01,0.01))+
     scale_x_continuous(limits=c(150,292),
-                       breaks=seq(150,300,25),
+                       breaks=seq(150,300,30),
                        expand=c(0.001,0.001),
-                       labels=c("30/05","24/06","19/07",
-                       "13/08","07/09","02/10","27/10")) +
+                        labels=c("30/05","29/06","29/07",
+                       "28/08","27/09","27/10")) +
   labs(y="Total distance (km)",tag="f)",x="") +
   scale_colour_manual(values=mycol, name="Year") +
   scale_fill_manual(values=mycol,name='Year') +
@@ -834,7 +834,7 @@ print(totcol)
 
 tiff(here::here("outputs","Final figures",
 "Trip_correlations_2005-2023_colday_update.tif"),
-     width=7000,height=4000,res=600,
+     width=6000,height=3500,res=600,
      compression="lzw")
 
 grid.arrange(arrangeGrob(distcol+theme(legend.position="none"),

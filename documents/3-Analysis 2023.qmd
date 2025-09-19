@@ -484,6 +484,7 @@ geom_point(alpha=0.4) +
      theme_light()+
     theme(#legend.position="none",
         axis.text=element_text(size=12),
+        axis.title=element_text(size=12),
           panel.grid.minor = element_blank()) 
 print(distlmmsex)
 
@@ -513,6 +514,8 @@ geom_point(alpha=0.4) +
     theme_light()+
     theme(#legend.position="none",
         axis.text=element_text(size=12),
+         axis.title=element_text(size=12),
+        legend.text=element_text(size=12),
           panel.grid.minor = element_blank()) 
     
 
@@ -541,7 +544,9 @@ geom_point(alpha=0.4) +
                               'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(#legend.position="none",
+         axis.title=element_text(size=12),
         axis.text=element_text(size=12),
+         legend.text=element_text(size=12),
           panel.grid.minor = element_blank()) 
     
 
@@ -570,6 +575,8 @@ geom_point(alpha=0.4) +
                               'M:0'='M normal','M:1'='M dark'))  +
     theme_light()+
     theme(panel.grid.minor = element_blank(),
+           axis.title=element_text(size=12),
+           legend.text=element_text(size=12),
           axis.text=element_text(size=12)) 
     
 mylegendlmmsero<-g_legend(distlmmsex)
@@ -584,7 +591,7 @@ grid.arrange(arrangeGrob(distlmmsex+ theme(legend.position="none"),
                          pathlmmsex+ theme(legend.position="none"),
                          landlmmsex+ theme(legend.position="none") ,
                                      ncol=2),
-               mylegendlmmsero, ncol=2,widths=c(1,0.1)) 
+               mylegendlmmsero, ncol=2,widths=c(1,0.11)) 
 
 dev.off()
 ```
